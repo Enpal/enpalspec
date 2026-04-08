@@ -18,4 +18,4 @@
 
 - [x] 4.1 Confirm `ci.yml` contains no references to `nix`, `flake`, or `changes` job
 - [x] 4.2 Confirm `release-prepare.yml` no longer exists in `.github/workflows/`
-- [ ] 4.3 Open a test PR and confirm CI runs successfully with only the expected jobs
+- [x] 4.3 Open a test PR and confirm CI runs successfully with only the expected jobs

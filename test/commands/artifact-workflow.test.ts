@@ -9,7 +9,7 @@ describe('artifact-workflow CLI commands', () => {
   let changesDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-artifact-workflow-'));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'enpalspec-artifact-workflow-'));
     changesDir = path.join(tempDir, 'openspec', 'changes');
     await fs.mkdir(changesDir, { recursive: true });
   });
@@ -630,7 +630,7 @@ artifacts:
       expect(output).toContain('.claude/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.claude', 'skills', 'enpalspec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -645,7 +645,7 @@ artifacts:
       expect(output).toContain('.cursor/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.cursor', 'skills', 'enpalspec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
 
@@ -665,7 +665,7 @@ artifacts:
       expect(output).toContain('.windsurf/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.windsurf', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.windsurf', 'skills', 'enpalspec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });

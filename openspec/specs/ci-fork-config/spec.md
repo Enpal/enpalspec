@@ -1,3 +1,9 @@
+## Purpose
+
+CI configuration for this fork removes upstream-only jobs (Nix validation, release preparation) and retains only the jobs that are valid in this fork context.
+
+## Requirements
+
 ### Requirement: CI workflow contains no Nix jobs
 The `ci.yml` workflow SHALL NOT contain any job that installs Nix, runs `nix build`, or depends on Nix flake files. The `nix-flake-validate` job and the `changes` path-filter job that gates it SHALL be removed.
 

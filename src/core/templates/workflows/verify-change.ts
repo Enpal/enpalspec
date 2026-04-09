@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getVerifyChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-verify-change',
+    name: 'enpalspec-verify-change',
     description: 'Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.',
     instructions: `Verify that an implementation matches the change artifacts (specs, tasks, design).
 

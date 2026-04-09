@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getApplyChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-apply-change',
+    name: 'enpalspec-apply-change',
     description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.',
     instructions: `Implement tasks from an OpenSpec change.
 
@@ -46,7 +46,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - Dynamic instruction based on current state
 
    **Handle states:**
-   - If \`state: "blocked"\` (missing artifacts): show message, suggest using openspec-continue-change
+   - If \`state: "blocked"\` (missing artifacts): show message, suggest using enpalspec-continue-change
    - If \`state: "all_done"\`: congratulate, suggest verify
    - Otherwise: proceed to implementation
 

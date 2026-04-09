@@ -55,17 +55,17 @@ export interface CommandTemplateEntry {
  */
 export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemplateEntry[] {
   const all: SkillTemplateEntry[] = [
-    { template: getExploreSkillTemplate(), dirName: 'openspec-explore', workflowId: 'explore' },
-    { template: getNewChangeSkillTemplate(), dirName: 'openspec-new-change', workflowId: 'new' },
-    { template: getContinueChangeSkillTemplate(), dirName: 'openspec-continue-change', workflowId: 'continue' },
-    { template: getApplyChangeSkillTemplate(), dirName: 'openspec-apply-change', workflowId: 'apply' },
-    { template: getFfChangeSkillTemplate(), dirName: 'openspec-ff-change', workflowId: 'ff' },
-    { template: getSyncSpecsSkillTemplate(), dirName: 'openspec-sync-specs', workflowId: 'sync' },
-    { template: getArchiveChangeSkillTemplate(), dirName: 'openspec-archive-change', workflowId: 'archive' },
-    { template: getBulkArchiveChangeSkillTemplate(), dirName: 'openspec-bulk-archive-change', workflowId: 'bulk-archive' },
-    { template: getVerifyChangeSkillTemplate(), dirName: 'openspec-verify-change', workflowId: 'verify' },
-    { template: getOnboardSkillTemplate(), dirName: 'openspec-onboard', workflowId: 'onboard' },
-    { template: getOpsxProposeSkillTemplate(), dirName: 'openspec-propose', workflowId: 'propose' },
+    { template: getExploreSkillTemplate(), dirName: 'enpalspec-explore', workflowId: 'explore' },
+    { template: getNewChangeSkillTemplate(), dirName: 'enpalspec-new-change', workflowId: 'new' },
+    { template: getContinueChangeSkillTemplate(), dirName: 'enpalspec-continue-change', workflowId: 'continue' },
+    { template: getApplyChangeSkillTemplate(), dirName: 'enpalspec-apply-change', workflowId: 'apply' },
+    { template: getFfChangeSkillTemplate(), dirName: 'enpalspec-ff-change', workflowId: 'ff' },
+    { template: getSyncSpecsSkillTemplate(), dirName: 'enpalspec-sync-specs', workflowId: 'sync' },
+    { template: getArchiveChangeSkillTemplate(), dirName: 'enpalspec-archive-change', workflowId: 'archive' },
+    { template: getBulkArchiveChangeSkillTemplate(), dirName: 'enpalspec-bulk-archive-change', workflowId: 'bulk-archive' },
+    { template: getVerifyChangeSkillTemplate(), dirName: 'enpalspec-verify-change', workflowId: 'verify' },
+    { template: getOnboardSkillTemplate(), dirName: 'enpalspec-onboard', workflowId: 'onboard' },
+    { template: getOpsxProposeSkillTemplate(), dirName: 'enpalspec-propose', workflowId: 'propose' },
   ];
 
   if (!workflowFilter) return all;
@@ -137,9 +137,9 @@ export function generateSkillContent(
 name: ${template.name}
 description: ${template.description}
 license: ${template.license || 'MIT'}
-compatibility: ${template.compatibility || 'Requires openspec CLI.'}
+compatibility: ${template.compatibility || 'Requires enpalspec CLI.'}
 metadata:
-  author: ${template.metadata?.author || 'openspec'}
+  author: ${template.metadata?.author || 'enpalspec'}
   version: "${template.metadata?.version || '1.0'}"
   generatedBy: "${generatedByVersion}"
 ---

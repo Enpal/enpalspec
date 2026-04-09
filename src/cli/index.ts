@@ -46,18 +46,18 @@ function getCommandPath(command: Command): string {
 
   while (current) {
     const name = current.name();
-    // Skip the root 'openspec' command
-    if (name && name !== 'openspec') {
+    // Skip the root 'enpalspec' command
+    if (name && name !== 'enpalspec') {
       names.unshift(name);
     }
     current = current.parent;
   }
 
-  return names.join(':') || 'openspec';
+  return names.join(':') || 'enpalspec';
 }
 
 program
-  .name('openspec')
+  .name('enpalspec')
   .description('AI-native system for spec-driven development')
   .version(version);
 
@@ -139,7 +139,7 @@ program
   .option('--no-interactive', 'Disable interactive prompts')
   .action(async (options?: { tool?: string; noInteractive?: boolean }) => {
     try {
-      console.log('Note: "openspec experimental" is deprecated. Use "openspec init" instead.');
+      console.log('Note: "enpalspec experimental" is deprecated. Use "enpalspec init" instead.');
       const { InitCommand } = await import('../core/init.js');
       const initCommand = new InitCommand({
         tools: options?.tool,
@@ -210,7 +210,7 @@ const changeCmd = program
 
 // Deprecation notice for noun-based commands
 changeCmd.hook('preAction', () => {
-  console.error('Warning: The "openspec change ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec list", "openspec validate --changes").');
+  console.error('Warning: The "enpalspec change ..." commands are deprecated. Prefer verb-first commands (e.g., "enpalspec list", "enpalspec validate --changes").');
 });
 
 changeCmd
@@ -232,12 +232,12 @@ changeCmd
 
 changeCmd
   .command('list')
-  .description('List all active changes (DEPRECATED: use "openspec list" instead)')
+  .description('List all active changes (DEPRECATED: use "enpalspec list" instead)')
   .option('--json', 'Output as JSON')
   .option('--long', 'Show id and title with counts')
   .action(async (options?: { json?: boolean; long?: boolean }) => {
     try {
-      console.error('Warning: "openspec change list" is deprecated. Use "openspec list".');
+      console.error('Warning: "enpalspec change list" is deprecated. Use "enpalspec list".');
       const changeCommand = new ChangeCommand();
       await changeCommand.list(options);
     } catch (error) {

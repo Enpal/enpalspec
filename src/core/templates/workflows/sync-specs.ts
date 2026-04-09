@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getSyncSpecsSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-sync-specs',
+    name: 'enpalspec-sync-specs',
     description: 'Sync delta specs from a change to main specs. Use when the user wants to update main specs with changes from a delta spec, without archiving the change.',
     instructions: `Sync delta specs from a change to main specs.
 

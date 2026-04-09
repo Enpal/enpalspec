@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getOnboardSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-onboard',
+    name: 'enpalspec-onboard',
     description: 'Guided onboarding for EnpalSpec - walk through a complete workflow cycle with narration and real codebase work.',
     instructions: getOnboardInstructions(),
     license: 'MIT',

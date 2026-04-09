@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getBulkArchiveChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-bulk-archive-change',
+    name: 'enpalspec-bulk-archive-change',
     description: 'Archive multiple completed changes at once. Use when archiving several parallel changes.',
     instructions: `Archive multiple completed changes in a single operation.
 
@@ -122,7 +122,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
    Process changes in the determined order (respecting conflict resolution):
 
    a. **Sync specs** if delta specs exist:
-      - Use the openspec-sync-specs approach (agent-driven intelligent merge)
+      - Use the enpalspec-sync-specs approach (agent-driven intelligent merge)
       - For conflicts, apply in resolved order
       - Track if sync was done
 
@@ -369,7 +369,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
    Process changes in the determined order (respecting conflict resolution):
 
    a. **Sync specs** if delta specs exist:
-      - Use the openspec-sync-specs approach (agent-driven intelligent merge)
+      - Use the enpalspec-sync-specs approach (agent-driven intelligent merge)
       - For conflicts, apply in resolved order
       - Track if sync was done
 

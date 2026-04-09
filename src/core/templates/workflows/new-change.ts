@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getNewChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-new-change',
+    name: 'enpalspec-new-change',
     description: 'Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach.',
     instructions: `Start a new change using the experimental artifact-driven approach.
 

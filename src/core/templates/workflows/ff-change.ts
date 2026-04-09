@@ -8,7 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 export function getFfChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-ff-change',
+    name: 'enpalspec-ff-change',
     description: 'Fast-forward through EnpalSpec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually.',
     instructions: `Fast-forward through artifact creation - generate everything needed to start implementation in one go.
 

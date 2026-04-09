@@ -34,7 +34,7 @@ describe('openspec CLI e2e basics', () => {
   it('shows help output', async () => {
     const result = await runCLI(['--help']);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('Usage: openspec');
+    expect(result.stdout).toContain('Usage: enpalspec');
     expect(result.stderr).toBe('');
 
   });
@@ -93,8 +93,8 @@ describe('openspec CLI e2e basics', () => {
       expect(result.stdout).toContain('EnpalSpec Setup Complete');
 
       // Check that skills were created for multiple tools
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/enpalspec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/enpalspec-explore/SKILL.md');
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(true);
     });
@@ -110,8 +110,8 @@ describe('openspec CLI e2e basics', () => {
       expect(result.stdout).toContain('Claude Code');
 
       // New init creates skills, not CLAUDE.md
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/enpalspec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/enpalspec-explore/SKILL.md');
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(false); // Not selected
     });
@@ -126,8 +126,8 @@ describe('openspec CLI e2e basics', () => {
       expect(result.stdout).toContain('EnpalSpec Setup Complete');
 
       // With --tools none, no tool skills should be created
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/enpalspec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/enpalspec-explore/SKILL.md');
 
       expect(await fileExists(claudeSkillPath)).toBe(false);
       expect(await fileExists(cursorSkillPath)).toBe(false);

@@ -9,6 +9,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import * as fs from 'fs';
+import { parse as parseYaml } from 'yaml';
 import { createRequire } from 'module';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { transformToHyphenCommands } from '../utils/command-references.js';
@@ -20,6 +21,7 @@ import {
 import { PALETTE } from './styles/palette.js';
 import { isInteractive } from '../utils/interactive.js';
 import { serializeConfig } from './config-prompts.js';
+import { parseConfigFields, type ProjectConfig } from './project-config.js';
 import {
   generateCommands,
   CommandAdapterRegistry,
@@ -83,6 +85,7 @@ type InitCommandOptions = {
   force?: boolean;
   interactive?: boolean;
   profile?: string;
+  configFile?: string;
 };
 
 // -----------------------------------------------------------------------------
@@ -94,12 +97,14 @@ export class InitCommand {
   private readonly force: boolean;
   private readonly interactiveOption?: boolean;
   private readonly profileOverride?: string;
+  private readonly configFile?: string;
 
   constructor(options: InitCommandOptions = {}) {
     this.toolsArg = options.tools;
     this.force = options.force ?? false;
     this.interactiveOption = options.interactive;
     this.profileOverride = options.profile;
+    this.configFile = options.configFile;
   }
 
   async execute(targetPath: string): Promise<void> {
@@ -147,8 +152,19 @@ export class InitCommand {
     // Generate skills and commands for each tool
     const results = await this.generateSkillsAndCommands(projectPath, validatedTools);
 
+    // Build seed data: from --config file if provided, else interactive prompt
+    let seedData: Partial<ProjectConfig> = {};
+    if (this.configFile) {
+      seedData = this.readSeedFile(this.configFile);
+    } else {
+      const interactiveContext = await this.promptForContext();
+      if (interactiveContext) {
+        seedData = { context: interactiveContext };
+      }
+    }
+
     // Create config.yaml if needed
-    const configStatus = await this.createConfig(openspecPath, extendMode);
+    const configStatus = await this.createConfig(openspecPath, extendMode, seedData);
 
     // Display success message
     this.displaySuccessMessage(projectPath, validatedTools, results, configStatus);
@@ -595,28 +611,60 @@ export class InitCommand {
   // CONFIG FILE
   // ═══════════════════════════════════════════════════════════
 
-  private async createConfig(openspecPath: string, extendMode: boolean): Promise<'created' | 'exists' | 'skipped'> {
+  private async createConfig(openspecPath: string, extendMode: boolean, seedData: Partial<ProjectConfig> = {}): Promise<'created' | 'exists' | 'skipped'> {
     const configPath = path.join(openspecPath, 'config.yaml');
     const configYmlPath = path.join(openspecPath, 'config.yml');
     const configYamlExists = fs.existsSync(configPath);
     const configYmlExists = fs.existsSync(configYmlPath);
 
     if (configYamlExists || configYmlExists) {
+      const hasSeedData = Object.keys(seedData).length > 0;
+      if (hasSeedData) {
+        const existingName = configYamlExists ? 'config.yaml' : 'config.yml';
+        console.log(chalk.yellow(`Warning: openspec/${existingName} already exists — seed file ignored. Edit it manually to add context, rules, or skills.`));
+      }
       return 'exists';
     }
 
-    // In non-interactive mode without --force, skip config creation
-    if (!this.canPromptInteractively() && !this.force) {
+    // In non-interactive mode without --force and no seed data, skip config creation
+    if (!this.canPromptInteractively() && !this.force && Object.keys(seedData).length === 0) {
       return 'skipped';
     }
 
     try {
-      const yamlContent = serializeConfig({ schema: DEFAULT_SCHEMA });
+      const yamlContent = serializeConfig({ schema: DEFAULT_SCHEMA, ...seedData });
       await FileSystemUtils.writeFile(configPath, yamlContent);
       return 'created';
     } catch {
       return 'skipped';
     }
+  }
+
+  private readSeedFile(filePath: string): Partial<ProjectConfig> {
+    const resolvedPath = path.resolve(filePath);
+    try {
+      const content = fs.readFileSync(resolvedPath, 'utf-8');
+      const raw = parseYaml(content);
+      const parsed = parseConfigFields(raw);
+      // schema from seed file is always ignored — init sets it from DEFAULT_SCHEMA
+      const { schema: _schema, ...rest } = parsed;
+      return rest;
+    } catch (error) {
+      console.log(chalk.yellow(`Warning: Could not read seed file "${filePath}" — proceeding without seeding config.`));
+      return {};
+    }
+  }
+
+  private async promptForContext(): Promise<string | undefined> {
+    if (!this.canPromptInteractively()) {
+      return undefined;
+    }
+    const { input } = await import('@inquirer/prompts');
+    const answer = await input({
+      message: 'Project context (optional, press Enter to skip):',
+    });
+    const trimmed = answer.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
   }
 
   // ═══════════════════════════════════════════════════════════

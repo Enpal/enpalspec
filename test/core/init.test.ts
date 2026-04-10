@@ -5,14 +5,16 @@ import os from 'os';
 import { InitCommand } from '../../src/core/init.js';
 import { saveGlobalConfig, getGlobalConfig } from '../../src/core/global-config.js';
 
-const { confirmMock, showWelcomeScreenMock, searchableMultiSelectMock } = vi.hoisted(() => ({
+const { confirmMock, inputMock, showWelcomeScreenMock, searchableMultiSelectMock } = vi.hoisted(() => ({
   confirmMock: vi.fn(),
+  inputMock: vi.fn().mockResolvedValue(''),
   showWelcomeScreenMock: vi.fn().mockResolvedValue(undefined),
   searchableMultiSelectMock: vi.fn(),
 }));
 
 vi.mock('@inquirer/prompts', () => ({
   confirm: confirmMock,
+  input: inputMock,
 }));
 
 vi.mock('../../src/ui/welcome-screen.js', () => ({
@@ -41,6 +43,8 @@ describe('InitCommand', () => {
     vi.spyOn(console, 'log').mockImplementation(() => { });
     confirmMock.mockReset();
     confirmMock.mockResolvedValue(true);
+    inputMock.mockReset();
+    inputMock.mockResolvedValue('');
     showWelcomeScreenMock.mockClear();
     searchableMultiSelectMock.mockReset();
   });
@@ -479,6 +483,8 @@ describe('InitCommand - profile and detection features', () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     confirmMock.mockReset();
     confirmMock.mockResolvedValue(true);
+    inputMock.mockReset();
+    inputMock.mockResolvedValue('');
     showWelcomeScreenMock.mockClear();
     searchableMultiSelectMock.mockReset();
   });

@@ -54,6 +54,117 @@ export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 const MAX_CONTEXT_SIZE = 50 * 1024; // 50KB hard limit
 
 /**
+ * Parse config fields from a raw YAML object.
+ * Validates each field independently (resilient field-by-field approach).
+ * Used by both readProjectConfig and seed file parsing.
+ *
+ * @param raw - The raw parsed YAML object
+ * @returns Partial config with only valid fields populated
+ */
+export function parseConfigFields(raw: unknown): Partial<ProjectConfig> {
+  const config: Partial<ProjectConfig> = {};
+
+  if (!raw || typeof raw !== 'object') {
+    return config;
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  // Parse schema field using Zod
+  const schemaField = z.string().min(1);
+  const schemaResult = schemaField.safeParse(obj.schema);
+  if (schemaResult.success) {
+    config.schema = schemaResult.data;
+  } else if (obj.schema !== undefined) {
+    console.warn(`Invalid 'schema' field in config (must be non-empty string)`);
+  }
+
+  // Parse context field with size limit
+  if (obj.context !== undefined) {
+    const contextField = z.string();
+    const contextResult = contextField.safeParse(obj.context);
+
+    if (contextResult.success) {
+      const contextSize = Buffer.byteLength(contextResult.data, 'utf-8');
+      if (contextSize > MAX_CONTEXT_SIZE) {
+        console.warn(
+          `Context too large (${(contextSize / 1024).toFixed(1)}KB, limit: ${MAX_CONTEXT_SIZE / 1024}KB)`
+        );
+        console.warn(`Ignoring context field`);
+      } else {
+        config.context = contextResult.data;
+      }
+    } else {
+      console.warn(`Invalid 'context' field in config (must be string)`);
+    }
+  }
+
+  // Parse rules field using Zod
+  if (obj.rules !== undefined) {
+    if (typeof obj.rules === 'object' && obj.rules !== null && !Array.isArray(obj.rules)) {
+      const parsedRules: Record<string, string[]> = {};
+      let hasValidRules = false;
+
+      for (const [artifactId, rules] of Object.entries(obj.rules as Record<string, unknown>)) {
+        const rulesArrayResult = z.array(z.string()).safeParse(rules);
+
+        if (rulesArrayResult.success) {
+          const validRules = rulesArrayResult.data.filter((r) => r.length > 0);
+          if (validRules.length > 0) {
+            parsedRules[artifactId] = validRules;
+            hasValidRules = true;
+          }
+          if (validRules.length < rulesArrayResult.data.length) {
+            console.warn(
+              `Some rules for '${artifactId}' are empty strings, ignoring them`
+            );
+          }
+        } else {
+          console.warn(
+            `Rules for '${artifactId}' must be an array of strings, ignoring this artifact's rules`
+          );
+        }
+      }
+
+      if (hasValidRules) {
+        config.rules = parsedRules;
+      }
+    } else {
+      console.warn(`Invalid 'rules' field in config (must be object)`);
+    }
+  }
+
+  // Parse skills field using resilient field-by-field approach
+  if (obj.skills !== undefined) {
+    if (typeof obj.skills === 'object' && obj.skills !== null && !Array.isArray(obj.skills)) {
+      const parsedSkills: Record<string, string> = {};
+      let hasValidSkills = false;
+
+      for (const [skillName, instruction] of Object.entries(obj.skills as Record<string, unknown>)) {
+        const instructionResult = z.string().safeParse(instruction);
+
+        if (instructionResult.success) {
+          parsedSkills[skillName] = instructionResult.data;
+          hasValidSkills = true;
+        } else {
+          console.warn(
+            `Skill instruction for '${skillName}' must be a string, ignoring this entry`
+          );
+        }
+      }
+
+      if (hasValidSkills) {
+        config.skills = parsedSkills;
+      }
+    } else {
+      console.warn(`Invalid 'skills' field in config (must be object)`);
+    }
+  }
+
+  return config;
+}
+
+/**
  * Read and parse openspec/config.yaml from project root.
  * Uses resilient parsing - validates each field independently using Zod safeParse.
  * Returns null if file doesn't exist.
@@ -91,102 +202,7 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
       return null;
     }
 
-    const config: Partial<ProjectConfig> = {};
-
-    // Parse schema field using Zod
-    const schemaField = z.string().min(1);
-    const schemaResult = schemaField.safeParse(raw.schema);
-    if (schemaResult.success) {
-      config.schema = schemaResult.data;
-    } else if (raw.schema !== undefined) {
-      console.warn(`Invalid 'schema' field in config (must be non-empty string)`);
-    }
-
-    // Parse context field with size limit
-    if (raw.context !== undefined) {
-      const contextField = z.string();
-      const contextResult = contextField.safeParse(raw.context);
-
-      if (contextResult.success) {
-        const contextSize = Buffer.byteLength(contextResult.data, 'utf-8');
-        if (contextSize > MAX_CONTEXT_SIZE) {
-          console.warn(
-            `Context too large (${(contextSize / 1024).toFixed(1)}KB, limit: ${MAX_CONTEXT_SIZE / 1024}KB)`
-          );
-          console.warn(`Ignoring context field`);
-        } else {
-          config.context = contextResult.data;
-        }
-      } else {
-        console.warn(`Invalid 'context' field in config (must be string)`);
-      }
-    }
-
-    // Parse rules field using Zod
-    if (raw.rules !== undefined) {
-      const rulesField = z.record(z.string(), z.array(z.string()));
-
-      // First check if it's an object structure (guard against null since typeof null === 'object')
-      if (typeof raw.rules === 'object' && raw.rules !== null && !Array.isArray(raw.rules)) {
-        const parsedRules: Record<string, string[]> = {};
-        let hasValidRules = false;
-
-        for (const [artifactId, rules] of Object.entries(raw.rules)) {
-          const rulesArrayResult = z.array(z.string()).safeParse(rules);
-
-          if (rulesArrayResult.success) {
-            // Filter out empty strings
-            const validRules = rulesArrayResult.data.filter((r) => r.length > 0);
-            if (validRules.length > 0) {
-              parsedRules[artifactId] = validRules;
-              hasValidRules = true;
-            }
-            if (validRules.length < rulesArrayResult.data.length) {
-              console.warn(
-                `Some rules for '${artifactId}' are empty strings, ignoring them`
-              );
-            }
-          } else {
-            console.warn(
-              `Rules for '${artifactId}' must be an array of strings, ignoring this artifact's rules`
-            );
-          }
-        }
-
-        if (hasValidRules) {
-          config.rules = parsedRules;
-        }
-      } else {
-        console.warn(`Invalid 'rules' field in config (must be object)`);
-      }
-    }
-
-    // Parse skills field using resilient field-by-field approach
-    if (raw.skills !== undefined) {
-      if (typeof raw.skills === 'object' && raw.skills !== null && !Array.isArray(raw.skills)) {
-        const parsedSkills: Record<string, string> = {};
-        let hasValidSkills = false;
-
-        for (const [skillName, instruction] of Object.entries(raw.skills)) {
-          const instructionResult = z.string().safeParse(instruction);
-
-          if (instructionResult.success) {
-            parsedSkills[skillName] = instructionResult.data;
-            hasValidSkills = true;
-          } else {
-            console.warn(
-              `Skill instruction for '${skillName}' must be a string, ignoring this entry`
-            );
-          }
-        }
-
-        if (hasValidSkills) {
-          config.skills = parsedSkills;
-        }
-      } else {
-        console.warn(`Invalid 'skills' field in config (must be object)`);
-      }
-    }
+    const config = parseConfigFields(raw);
 
     // Return partial config even if some fields failed
     return Object.keys(config).length > 0 ? (config as ProjectConfig) : null;

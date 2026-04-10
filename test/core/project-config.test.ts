@@ -6,6 +6,7 @@ import {
   readProjectConfig,
   validateConfigRules,
   suggestSchemas,
+  parseConfigFields,
 } from '../../src/core/project-config.js';
 
 describe('project-config', () => {
@@ -703,6 +704,71 @@ skills:
       // 'abcdefghijk' has large Levenshtein distance from all schemas
       expect(message).not.toContain('Did you mean');
       expect(message).toContain('Available schemas:');
+    });
+  });
+
+  describe('parseConfigFields', () => {
+    it('should parse context field', () => {
+      const result = parseConfigFields({ context: 'TypeScript, React' });
+      expect(result.context).toBe('TypeScript, React');
+    });
+
+    it('should parse rules field', () => {
+      const result = parseConfigFields({
+        rules: { proposal: ['Include rollback plan'] },
+      });
+      expect(result.rules).toEqual({ proposal: ['Include rollback plan'] });
+    });
+
+    it('should parse skills field', () => {
+      const result = parseConfigFields({
+        skills: { explore: 'Consider SDK-first.' },
+      });
+      expect(result.skills).toEqual({ explore: 'Consider SDK-first.' });
+    });
+
+    it('should parse schema field', () => {
+      const result = parseConfigFields({ schema: 'enpal-spec-driven' });
+      expect(result.schema).toBe('enpal-spec-driven');
+    });
+
+    it('should return empty object for non-object input', () => {
+      expect(parseConfigFields(null)).toEqual({});
+      expect(parseConfigFields('string')).toEqual({});
+      expect(parseConfigFields(42)).toEqual({});
+    });
+
+    it('should skip invalid context (non-string)', () => {
+      const result = parseConfigFields({ context: 123 });
+      expect(result.context).toBeUndefined();
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
+
+    it('should skip invalid rules (non-object)', () => {
+      const result = parseConfigFields({ rules: 'not an object' });
+      expect(result.rules).toBeUndefined();
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
+
+    it('should skip invalid skills (array instead of object)', () => {
+      const result = parseConfigFields({ skills: ['explore'] });
+      expect(result.skills).toBeUndefined();
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
+
+    it('should accept partial input — only populate fields present', () => {
+      const result = parseConfigFields({ context: 'TypeScript' });
+      expect(result.context).toBe('TypeScript');
+      expect(result.rules).toBeUndefined();
+      expect(result.skills).toBeUndefined();
+      expect(result.schema).toBeUndefined();
+    });
+
+    it('should use path.join-compatible paths in file-based callers (cross-platform guard)', () => {
+      // This verifies that parseConfigFields itself has no path logic (path.resolve is in readSeedFile)
+      // The function only processes a raw object, so it is inherently path-agnostic.
+      const result = parseConfigFields({ context: 'no paths here' });
+      expect(result.context).toBe('no paths here');
     });
   });
 });

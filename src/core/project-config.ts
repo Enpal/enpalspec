@@ -38,6 +38,15 @@ export const ProjectConfigSchema = z.object({
     )
     .optional()
     .describe('Per-artifact rules, keyed by artifact ID'),
+
+  // Optional: per-skill instructions (injected into seeded skill executions)
+  skills: z
+    .record(
+      z.string(), // skill name (e.g., "explore", "propose")
+      z.string()  // instruction string
+    )
+    .optional()
+    .describe('Per-skill instructions, keyed by skill name'),
 });
 
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
@@ -149,6 +158,33 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
         }
       } else {
         console.warn(`Invalid 'rules' field in config (must be object)`);
+      }
+    }
+
+    // Parse skills field using resilient field-by-field approach
+    if (raw.skills !== undefined) {
+      if (typeof raw.skills === 'object' && raw.skills !== null && !Array.isArray(raw.skills)) {
+        const parsedSkills: Record<string, string> = {};
+        let hasValidSkills = false;
+
+        for (const [skillName, instruction] of Object.entries(raw.skills)) {
+          const instructionResult = z.string().safeParse(instruction);
+
+          if (instructionResult.success) {
+            parsedSkills[skillName] = instructionResult.data;
+            hasValidSkills = true;
+          } else {
+            console.warn(
+              `Skill instruction for '${skillName}' must be a string, ignoring this entry`
+            );
+          }
+        }
+
+        if (hasValidSkills) {
+          config.skills = parsedSkills;
+        }
+      } else {
+        console.warn(`Invalid 'skills' field in config (must be object)`);
       }
     }
 

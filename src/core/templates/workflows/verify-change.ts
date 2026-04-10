@@ -12,6 +12,14 @@ export function getVerifyChangeSkillTemplate(): SkillTemplate {
     description: 'Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.',
     instructions: `Verify that an implementation matches the change artifacts (specs, tasks, design).
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance verify --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
@@ -180,6 +188,14 @@ export function getOpsxVerifyCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'verify', 'experimental'],
     content: `Verify that an implementation matches the change artifacts (specs, tasks, design).
+
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance verify --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
 
 **Input**: Optionally specify a change name after \`/enpalspec:verify\` (e.g., \`/enpalspec:verify add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 

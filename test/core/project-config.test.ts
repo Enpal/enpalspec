@@ -482,6 +482,104 @@ rules:
     });
   });
 
+  describe('skills field parsing', () => {
+    it('should parse valid skills map', () => {
+      const configDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(configDir, 'config.yaml'),
+        `schema: spec-driven
+skills:
+  explore: "Consider our microservices arch"
+  propose: "Include a rollback plan"
+`
+      );
+
+      const config = readProjectConfig(tempDir);
+
+      expect(config).toEqual({
+        schema: 'spec-driven',
+        skills: {
+          explore: 'Consider our microservices arch',
+          propose: 'Include a rollback plan',
+        },
+      });
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return config without skills when skills key is missing', () => {
+      const configDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(path.join(configDir, 'config.yaml'), 'schema: spec-driven\n');
+
+      const config = readProjectConfig(tempDir);
+
+      expect(config).toEqual({ schema: 'spec-driven' });
+      expect(config?.skills).toBeUndefined();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+    });
+
+    it('should warn and skip non-string skill instruction values', () => {
+      const configDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(configDir, 'config.yaml'),
+        `schema: spec-driven
+skills:
+  explore: 123
+  propose: "Valid instruction"
+`
+      );
+
+      const config = readProjectConfig(tempDir);
+
+      expect(config?.skills).toEqual({ propose: 'Valid instruction' });
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Skill instruction for 'explore' must be a string")
+      );
+    });
+
+    it('should warn and omit skills field when skills is not an object', () => {
+      const configDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(configDir, 'config.yaml'),
+        `schema: spec-driven
+skills: "not an object"
+`
+      );
+
+      const config = readProjectConfig(tempDir);
+
+      expect(config).toEqual({ schema: 'spec-driven' });
+      expect(config?.skills).toBeUndefined();
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid 'skills' field")
+      );
+    });
+
+    it('should accept arbitrary skill names without validation', () => {
+      const configDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(configDir, 'config.yaml'),
+        `schema: spec-driven
+skills:
+  my-custom-skill: "Custom instruction"
+  unknown-skill: "Another instruction"
+`
+      );
+
+      const config = readProjectConfig(tempDir);
+
+      expect(config?.skills).toEqual({
+        'my-custom-skill': 'Custom instruction',
+        'unknown-skill': 'Another instruction',
+      });
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('validateConfigRules', () => {
     it('should return no warnings for valid artifact IDs', () => {
       const rules = {

@@ -34,6 +34,20 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
   lines.push('#       - Always include a "Non-goals" section');
   lines.push('#     tasks:');
   lines.push('#       - Break tasks into chunks of max 2 hours');
+  lines.push('');
+
+  // Skills section with comments
+  lines.push('# Per-skill instructions (optional)');
+  lines.push('# Add project-specific guidance for each workflow skill.');
+  lines.push('# The skill reads this at the start of each session.');
+  lines.push('# Example:');
+  lines.push('#   skills:');
+  lines.push('#     explore: |');
+  lines.push('#       Always consider our SDK-first architecture principle.');
+  lines.push('#       Cross-subsystem operations belong in the orchestration layer.');
+  lines.push('#     propose: |');
+  lines.push('#       Proposals must include a rollback plan.');
+  lines.push('#       Breaking changes require a migration path.');
 
   return lines.join('\n') + '\n';
 }

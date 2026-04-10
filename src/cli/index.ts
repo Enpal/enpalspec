@@ -16,6 +16,7 @@ import { CompletionCommand } from '../commands/completion.js';
 import { FeedbackCommand } from '../commands/feedback.js';
 import { registerConfigCommand } from '../commands/config.js';
 import { registerSchemaCommand } from '../commands/schema.js';
+import { guidanceCommand, type GuidanceOptions } from '../commands/guidance.js';
 import {
   statusCommand,
   instructionsCommand,
@@ -500,6 +501,21 @@ newCmd
   .action(async (name: string, options: NewChangeOptions) => {
     try {
       await newChangeCommand(name, options);
+    } catch (error) {
+      console.log();
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Guidance command
+program
+  .command('guidance <skill-name>')
+  .description('Return project context and skill-specific instructions from config.yaml')
+  .option('--json', 'Output as JSON')
+  .action(async (skillName: string, options: GuidanceOptions) => {
+    try {
+      guidanceCommand(skillName, options);
     } catch (error) {
       console.log();
       ora().fail(`Error: ${(error as Error).message}`);

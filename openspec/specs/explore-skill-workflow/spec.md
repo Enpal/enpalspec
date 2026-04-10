@@ -5,6 +5,25 @@ Define the document-first explore skill workflow: exploration document created a
 
 ## Requirements
 
+### Requirement: Explore skill fetches guidance before any other action
+The seeded explore skill (both `enpalspec-explore` skill and `enpalspec:explore` command) SHALL call `enpalspec guidance explore --json` as its absolute first step, before creating the exploration document or any other action. If the command returns a non-null `context`, the skill SHALL treat it as project background throughout the session. If the command returns non-null `instructions`, the skill SHALL treat them as additional guidance for the session. If the command fails or returns null fields, the skill SHALL continue normally without error.
+
+#### Scenario: Guidance returns context and instructions
+- **WHEN** user invokes the explore skill
+- **AND** `enpalspec guidance explore --json` returns `{ context: "TypeScript monorepo", instructions: "Always consider the SDK-first principle" }`
+- **THEN** the skill uses both as background context for the rest of the session
+- **AND** does NOT include this guidance verbatim in the exploration document
+
+#### Scenario: Guidance returns nothing
+- **WHEN** user invokes the explore skill
+- **AND** `enpalspec guidance explore --json` returns `{ context: null, instructions: null }`
+- **THEN** the skill continues as normal with no change in behaviour
+
+#### Scenario: Guidance command fails
+- **WHEN** user invokes the explore skill
+- **AND** `enpalspec guidance explore --json` exits with a non-zero code or is not found in PATH
+- **THEN** the skill continues as normal without surfacing the error to the user
+
 ### Requirement: Explore skill creates exploration doc at session start
 The explore skill SHALL create the exploration document at the correct path at the start of every session. If the topic is clear, the skill SHALL immediately write `## Observations` and `## Round 1` to the document and post a findings digest in chat. If the topic is too vague to investigate meaningfully, the skill SHALL first ask clarifying questions in chat (one at a time, biggest blast radius first) until sufficient context exists.
 

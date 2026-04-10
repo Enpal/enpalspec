@@ -12,6 +12,14 @@ export function getContinueChangeSkillTemplate(): SkillTemplate {
     description: 'Continue working on an OpenSpec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow.',
     instructions: `Continue working on a change by creating the next artifact.
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance continue --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
@@ -130,6 +138,14 @@ export function getOpsxContinueCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Continue working on a change by creating the next artifact.
+
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance continue --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
 
 **Input**: Optionally specify a change name after \`/enpalspec:continue\` (e.g., \`/enpalspec:continue add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 

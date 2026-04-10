@@ -12,6 +12,14 @@ export function getExploreSkillTemplate(): SkillTemplate {
     description: 'Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.',
     instructions: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat is a companion that summarises findings and signals progress.
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance explore --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout the session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 ## Exploration Doc Setup
 
 **At the very start of every session**, handle topic derivation, clarification (if needed), and document creation before anything else.
@@ -224,6 +232,14 @@ export function getOpsxExploreCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'explore', 'experimental', 'thinking'],
     content: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat summarises findings and signals progress.
+
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance explore --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout the session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
 
 ## Exploration Doc Setup
 

@@ -12,6 +12,14 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
     description: 'Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.',
     instructions: `Archive a completed change in the experimental workflow.
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance archive --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
@@ -126,6 +134,14 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'archive', 'experimental'],
     content: `Archive a completed change in the experimental workflow.
+
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance archive --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
 
 **Input**: Optionally specify a change name after \`/enpalspec:archive\` (e.g., \`/enpalspec:archive add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 

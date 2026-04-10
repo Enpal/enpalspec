@@ -12,6 +12,14 @@ export function getOpsxProposeSkillTemplate(): SkillTemplate {
     description: 'Propose a new change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.',
     instructions: `Propose a new change - create the change and generate all artifacts in one step.
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance propose --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 I'll create a change with artifacts:
 - proposal.md (what & why)
 - design.md (how)
@@ -171,6 +179,14 @@ export function getOpsxProposeCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Propose a new change - create the change and generate all artifacts in one step.
+
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance propose --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
 
 I'll create a change with artifacts:
 - proposal.md (what & why)

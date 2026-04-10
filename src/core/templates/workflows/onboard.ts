@@ -20,6 +20,14 @@ export function getOnboardSkillTemplate(): SkillTemplate {
 function getOnboardInstructions(): string {
   return `Guide the user through their first complete EnpalSpec workflow cycle. This is a teaching experience—you'll do real work in their codebase while explaining each step.
 
+## Step 0: Load Project Guidance
+
+Before anything else, run:
+\`\`\`bash
+enpalspec guidance onboard --json
+\`\`\`
+If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+
 ---
 
 ## Preflight

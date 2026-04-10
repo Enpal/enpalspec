@@ -18,28 +18,45 @@ The system SHALL store exploration documents at `openspec/explorations/<yyyy-mm>
 - **THEN** the exploration doc is created under `openspec/explorations/2026-05/`
 
 ### Requirement: Exploration doc structure
-The exploration document SHALL contain the following sections in order: a top-level heading with the topic, metadata (date, linked change if any), a Context section written at the start, a Rounds section appended after each Q&A round, an Insights & Decisions section written at the end, and an Open Questions section written at the end.
+The exploration document SHALL contain the following sections in order: a top-level heading with the topic, metadata (date, linked change if any), a Context section written at session start, an Observations section written by the assistant before any Q&A rounds, a Rounds section where Q&A questions are appended before the user answers them, and an Insights & Decisions section written at the end. There is no Open Questions section.
 
 #### Scenario: Document created at session start
 - **WHEN** an explore session begins
 - **THEN** the document is created immediately with the heading, metadata, and Context section filled in
-- **AND** the Rounds section is present but empty
+- **AND** the Observations section is present with a `<!-- Written by assistant before Round 1 -->` placeholder
+- **AND** the Rounds section is present with a placeholder comment
+- **AND** there is NO `## Open Questions` section in the template
 
-#### Scenario: Q&A round appended
-- **WHEN** the user completes a Q&A round
-- **THEN** a new `### Round N — <Theme>` subsection is appended under Rounds
-- **AND** each question in the round is recorded with its title, options presented, and the selected answer
+#### Scenario: Observations section written before Round 1
+- **WHEN** the skill writes to the document for the first time
+- **THEN** the `## Observations` section is filled with codebase findings, diagrams, and framing
+- **AND** `## Round 1` questions are appended immediately after in the same operation
+- **AND** this all happens before the user has answered anything
+
+#### Scenario: Q&A round appended before user answers
+- **WHEN** a Q&A round begins
+- **THEN** the round's questions are appended to the `## Rounds` section with the user's answer fields left blank
 - **AND** the document is NOT rewritten from scratch — only appended to
+- **AND** the user fills in the answers by editing the file directly
 
-#### Scenario: Session ends with summary
+#### Scenario: Session ends with Insights & Decisions only
 - **WHEN** the explore session concludes
-- **THEN** the Insights & Decisions section is written summarising key decisions made
-- **AND** the Open Questions section is written listing unresolved items
+- **THEN** the `## Insights & Decisions` section is written summarising all decisions made
+- **AND** no `## Open Questions` section is written — unresolved questions are asked as a final round instead
 
 ### Requirement: Q&A log entry format
-Each question in the Q&A log SHALL record: the question number and title as a heading, the question text, all options presented (with the recommended option marked), and the selected answer with any user notes.
+Each question in a Q&A round SHALL use `### QN.M — {Title}` headings, present checkbox options with one `[x]` pre-marked recommended option labelled with a reason, and include a freetext answer field that the user fills in directly.
 
-#### Scenario: Q&A entry captures selection
-- **WHEN** user selects option B for question Q1.2
-- **THEN** the log entry shows all options, marks B as selected, and includes any freetext the user provided
-- **AND** the recommended option is visually marked in the options list
+#### Scenario: Q&A entry format in file
+- **WHEN** the skill appends a Q&A question to the exploration file
+- **THEN** the question uses a `### QN.M — {Question title}` heading
+- **AND** lists 2–4 options as markdown checkboxes
+- **AND** pre-marks the recommended option as `[x]` with a `← recommended: <reason>` label
+- **AND** all other options are marked `[ ]`
+- **AND** includes a freetext field: `> **Your answer / freetext:**` followed by a blank `>` line
+
+#### Scenario: User answers by editing the file
+- **WHEN** the user opens the exploration file to answer a round
+- **THEN** they change the `[ ]` on their chosen option to `[x]` (and optionally uncheck the pre-marked recommended if they chose differently)
+- **AND** fill in their freetext answer under `> **Your answer / freetext:**`
+- **AND** signal readiness in chat ("next", "done", etc.)

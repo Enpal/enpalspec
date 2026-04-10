@@ -30,14 +30,14 @@ import {
 import { generateSkillContent } from '../../../src/core/shared/skill-generation.js';
 
 const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
-  getExploreSkillTemplate: '98b4e49c9739bd038c26b1c168403ac32eff2934869c1282b6e64d70105eab78',
+  getExploreSkillTemplate: 'a3a01aa4648d94d1383eb6c39e4fba44ed55b7dee5f797f80be2344c3d22a447',
   getNewChangeSkillTemplate: 'da2add8f373f05b271be8fba4008b96974a4455b9f04d3a0c7317c03687e0b25',
   getContinueChangeSkillTemplate: '2e7ac3d49c397f4a9342b5a2d64c3a5ab4abdd0546be271775de9f0ad9e6aad5',
   getApplyChangeSkillTemplate: '39330c2cdf0e2ddac10e8de4c4a05f3a7afa4e648c2bbeae4e857e70758e7bb5',
   getFfChangeSkillTemplate: '5ee79ba3cb3a88c99064a41216f1defa1337c778c95d7d7c8616e1a5f30fde79',
   getSyncSpecsSkillTemplate: 'a0b209d22b5f7c8f631f662efce1d6699c01f3884419effdd29b8450414bd0f8',
   getOnboardSkillTemplate: 'b41bcb2447f8312aef3f8736baa78af89ebfa7ef0ad9aa194140831781f81cef',
-  getOpsxExploreCommandTemplate: '0fac843f1ebda93922c2ad9f7bd561aec45fca4c83690e71a827a6d697b8815e',
+  getOpsxExploreCommandTemplate: '86d9e818c37efe834b3ff8c7d7b8a57a46e16a8922b9f96dd32cd9398afa2148',
   getOpsxNewCommandTemplate: 'a300d31247f02b206d4042a6c3bb73e823575c299b31a0fc96630cb2353bd79f',
   getOpsxContinueCommandTemplate: '7fc5831887d533beb75b32c7b5229bd52e2fc7567ab1a541ea696b7da78f3329',
   getOpsxApplyCommandTemplate: '2ce7ba02e5cfc1c041f7af440c19860fb65cd199913fd0a39ba6ba1e575d6bb0',
@@ -56,7 +56,7 @@ const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
 };
 
 const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
-  'enpalspec-explore': '116cf094ce67e515c39a3d54bfe480ad1fe176a32251136970ad15a449045f88',
+  'enpalspec-explore': '3a50961373242101f589e42a8e0c68fb48270749c4a183c7c0f602c4d55d9f22',
   'enpalspec-new-change': '0334e8f6cd05eebc003c0f667898f23677561cac5e08933f7b89addb064b2ee5',
   'enpalspec-continue-change': '175c874ad4e1a99ebce449b920e34b0067d4a8bbdabd95a32cd117c297f896c2',
   'enpalspec-apply-change': 'fc9a3599bcf417a27f19fe7f827edab401548a8a6a07e9007bd6f3ac8ffc9a28',

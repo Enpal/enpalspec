@@ -5,6 +5,8 @@ context: |
   Package manager: pnpm
   CLI framework: Commander.js
 
+  Important: there is a difference between the specs we use for spec driven development (everything in the openspec folder) and the skills, configuration, specs and commands we are seeding projects with (which is the main area of work).
+
   Cross-platform requirements:
   - This tool runs on macOS, Linux, AND Windows
   - Always use path.join() or path.resolve() for file paths - never hardcode slashes

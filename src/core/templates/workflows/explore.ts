@@ -10,11 +10,11 @@ export function getExploreSkillTemplate(): SkillTemplate {
   return {
     name: 'enpalspec-explore',
     description: 'Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.',
-    instructions: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
+    instructions: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat is a companion that summarises findings and signals progress.
 
 ## Exploration Doc Setup
 
-**At the very start of every session**, create an exploration document before any exploration begins.
+**At the very start of every session**, handle topic derivation, clarification (if needed), and document creation before anything else.
 
 ### Step 1: Derive the topic
 
@@ -39,9 +39,22 @@ const docPath = path.join(folder, filename);
 
 Always use \`path.join()\` — never hardcode slashes. This ensures correct behaviour on Windows.
 
-### Step 3: Create the document immediately
+### Step 3: Check if the topic needs clarification
 
-Write the file with the heading, metadata, Context section (filled in), and an empty Rounds section:
+**If the topic is specific enough to investigate** (e.g., "auth redesign", "postgres vs sqlite for CLI tools"): skip to Step 4.
+
+**If the topic is too vague to investigate meaningfully** (e.g., "performance", "make it better"):
+- Create the doc with Context only (leave Observations and Rounds empty)
+- Ask the single most impactful clarifying question in chat
+- Wait for the user's answer, then ask the next most impactful question if needed
+- Continue until you have enough context to write useful Observations
+- Then proceed to Step 4
+
+Ask one question at a time. Biggest blast radius first.
+
+### Step 4: Create the document and write Observations + Round 1 in one shot
+
+Write the document with all sections filled:
 
 \`\`\`markdown
 # Exploration: <topic>
@@ -53,88 +66,99 @@ Write the file with the heading, metadata, Context section (filled in), and an e
 
 <2-3 sentences summarising what the user wants to explore and why>
 
+## Observations
+
+<Your codebase research, diagrams, framing, and key findings. Use ASCII diagrams liberally.
+This is your thinking — what you found, how the system currently works, what constraints matter.>
+
 ## Rounds
 
-<!-- Q&A rounds will be appended here after each round -->
+## Round 1 — <Theme>
+
+### Q1.1 — <Question title>
+
+<1-sentence question or context>
+
+- [x] Recommended option ← recommended: reason
+- [ ] Alternative option
+- [ ] Another alternative
+
+> **Your answer / freetext:**
+>
 
 ## Insights & Decisions
 
 <!-- Written at end of session -->
-
-## Open Questions
-
-<!-- Written at end of session -->
 \`\`\`
 
-Tell the user: "Started exploration doc at \`<docPath>\`"
+After writing the document, tell the user in chat:
+
+> "**[3–5 bullet findings digest]**
+>
+> Observations and Round 1 are in the doc at \`<docPath>\` — answer there, then say 'next'."
 
 ---
 
 **IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create EnpalSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.
 
-**This is a stance, not a workflow.** There are no fixed steps, no required sequence. You're a thinking partner.
+---
 
-**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create EnpalSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.
+## Q&A Rounds
 
-**This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
+Each round covers **one theme** and contains **2–5 focused questions**. Rounds are written to the exploration file — not asked in chat. Ask one question at a time only when a topic warrants it; otherwise batch 2–5 questions per round.
+
+### Round format
+
+Append each round to the exploration file under \`## Rounds\` using this format:
+
+\`\`\`markdown
+## Round N — <Theme>
+
+### QN.M — <Question title>
+
+<1-sentence question or context>
+
+- [x] Recommended option ← recommended: reason
+- [ ] Alternative option
+- [ ] Another alternative
+
+> **Your answer / freetext:**
+>
+\`\`\`
+
+Pre-mark the recommended option with \`[x]\`. All other options are \`[ ]\`. The user edits
+the checkboxes and fills in the freetext field directly.
+
+### After writing a round
+
+After appending the round to the file, tell the user in chat (only):
+
+> "Round N is in the doc — answer there, then say 'next' when ready."
+
+**Stop and wait.** Do NOT repeat the questions in chat.
+
+When the user signals readiness ("next", "done", "answered", etc.):
+1. Read the exploration file
+2. Absorb their answers from the updated checkboxes and freetext fields
+3. Post a brief decision summary in chat: what was decided this round
+4. Either append the next round to the file (if more themes remain) or proceed to wrap-up
+
+**Append only** — do NOT rewrite the file from scratch. **No round limit.**
+
+If questions remain before wrapping up, ask them as a final round — do not list them as open questions.
 
 ---
 
-## The Stance
+## End-of-Session Wrap-Up
 
-- **Curious, not prescriptive** - Ask questions that emerge naturally, don't follow a script
-- **Open threads, not interrogations** - Surface multiple interesting directions and let the user follow what resonates. Don't funnel them through a single path of questions.
-- **Visual** - Use ASCII diagrams liberally when they'd help clarify thinking
-- **Adaptive** - Follow interesting threads, pivot when new information emerges
-- **Patient** - Don't rush to conclusions, let the shape of the problem emerge
-- **Grounded** - Explore the actual codebase when relevant, don't just theorize
+When all rounds are complete and the user signals they are done:
 
----
+1. Append the \`## Insights & Decisions\` section to the doc — every decision made, formatted as:
+   "_Decision:_ <what was decided> — _Reason:_ <why>"
+2. Tell the user in chat:
+   > "Exploration doc saved at \`<docPath>\`. Ready to propose? Run \`/enpalspec:propose\`."
 
-## What You Might Do
-
-Depending on what the user brings, you might:
-
-**Explore the problem space**
-- Ask clarifying questions that emerge from what they said
-- Challenge assumptions
-- Reframe the problem
-- Find analogies
-
-**Investigate the codebase**
-- Map existing architecture relevant to the discussion
-- Find integration points
-- Identify patterns already in use
-- Surface hidden complexity
-
-**Compare options**
-- Brainstorm multiple approaches
-- Build comparison tables
-- Sketch tradeoffs
-- Recommend a path (if asked)
-
-**Visualize**
-\`\`\`
-┌─────────────────────────────────────────┐
-│     Use ASCII diagrams liberally        │
-├─────────────────────────────────────────┤
-│                                         │
-│   ┌────────┐         ┌────────┐        │
-│   │ State  │────────▶│ State  │        │
-│   │   A    │         │   B    │        │
-│   └────────┘         └────────┘        │
-│                                         │
-│   System diagrams, state machines,      │
-│   data flows, architecture sketches,    │
-│   dependency graphs, comparison tables  │
-│                                         │
-└─────────────────────────────────────────┘
-\`\`\`
-
-**Surface risks and unknowns**
-- Identify what could go wrong
-- Find gaps in understanding
-- Suggest spikes or investigations
+Do NOT write an \`## Open Questions\` section. If questions remain, ask them as a round first.
 
 ---
 
@@ -149,33 +173,21 @@ At the start, quickly check what exists:
 enpalspec list --json
 \`\`\`
 
-This tells you:
-- If there are active changes
-- Their names, schemas, and status
-- What the user might be working on
-
-### When no change exists
-
-Think freely. When insights crystallize, you might offer:
-
-- "This feels solid enough to start a change. Want me to create a proposal?"
-- Or keep exploring - no pressure to formalize
+If the user mentioned a specific change name, read its artifacts for context before writing Observations.
 
 ### When a change exists
 
-If the user mentions a change or you detect one is relevant:
+If a change is relevant:
 
 1. **Read existing artifacts for context**
    - \`openspec/changes/<name>/proposal.md\`
    - \`openspec/changes/<name>/design.md\`
    - \`openspec/changes/<name>/tasks.md\`
-   - etc.
 
-2. **Reference them naturally in conversation**
+2. **Reference them in Observations**
    - "Your design mentions using Redis, but we just realized SQLite fits better..."
-   - "The proposal scopes this to premium users, but we're now thinking everyone..."
 
-3. **Offer to capture when decisions are made**
+3. **Offer to capture decisions**
 
    | Insight Type | Where to Capture |
    |--------------|------------------|
@@ -184,235 +196,20 @@ If the user mentions a change or you detect one is relevant:
    | Design decision made | \`design.md\` |
    | Scope changed | \`proposal.md\` |
    | New work identified | \`tasks.md\` |
-   | Assumption invalidated | Relevant artifact |
-
-   Example offers:
-   - "That's a design decision. Capture it in design.md?"
-   - "This is a new requirement. Add it to specs?"
-   - "This changes scope. Update the proposal?"
 
 4. **The user decides** - Offer and move on. Don't pressure. Don't auto-capture.
-
----
-
-## What You Don't Have To Do
-
-- Follow a script
-- Ask the same questions every time
-- Produce a specific artifact
-- Reach a conclusion
-- Stay on topic if a tangent is valuable
-- Be brief (this is thinking time)
-
----
-
-## Handling Different Entry Points
-
-**User brings a vague idea:**
-\`\`\`
-User: I'm thinking about adding real-time collaboration
-
-You: Real-time collab is a big space. Let me think about this...
-
-      COLLABORATION SPECTRUM
-      ════════════════════════════════════════════
-
-      Awareness          Coordination         Sync
-          │                   │                 │
-          ▼                   ▼                 ▼
-      ┌────────┐         ┌────────┐        ┌────────┐
-      │Presence│         │Cursors │        │  CRDT  │
-      │  "3    │         │ Multi  │        │Conflict│
-      │online" │         │ select │        │  free  │
-      └────────┘         └────────┘        └────────┘
-          │                   │                 │
-       trivial            moderate           complex
-
-      Where's your head at?
-\`\`\`
-
-**User brings a specific problem:**
-\`\`\`
-User: The auth system is a mess
-
-You: [reads codebase]
-
-     ┌─────────────────────────────────────────────┐
-     │              CURRENT AUTH FLOW              │
-     └─────────────────────────────────────────────┘
-                        │
-          ┌─────────────┼─────────────┐
-          ▼             ▼             ▼
-     ┌─────────┐  ┌─────────┐  ┌─────────┐
-     │ Google  │  │  GitHub │  │  Email  │
-     │  OAuth  │  │  OAuth  │  │  Magic  │
-     └────┬────┘  └────┬────┘  └────┬────┘
-          │             │             │
-          └─────────────┼─────────────┘
-                        ▼
-                  ┌───────────┐
-                  │  Session  │
-                  └─────┬─────┘
-                        │
-                        ▼
-                  ┌───────────┐
-                  │   Perms   │
-                  └───────────┘
-
-     I see three tangles. Which one's burning?
-\`\`\`
-
-**User is stuck mid-implementation:**
-\`\`\`
-User: /enpalspec:explore add-auth-system
-      The OAuth integration is more complex than expected
-
-You: [reads change artifacts]
-
-     You're on task 4: "Implement OAuth flow"
-
-     Let me trace what's involved...
-
-     [draws diagram, explores options, suggests paths]
-
-     Want to update the design to reflect this?
-     Or add a spike task to investigate?
-\`\`\`
-
-**User wants to compare options:**
-\`\`\`
-User: Should we use Postgres or SQLite?
-
-You: Generic answer is boring. What's the context?
-
-User: A CLI tool that tracks local dev environments
-
-You: That changes everything.
-
-     ┌─────────────────────────────────────────────────┐
-     │         CLI TOOL DATA STORAGE                  │
-     └─────────────────────────────────────────────────┘
-
-     Key constraints:
-     • No daemon running
-     • Must work offline
-     • Single user
-
-                  SQLite          Postgres
-     Deployment   embedded ✓      needs server ✗
-     Offline      yes ✓           no ✗
-     Single file  yes ✓           no ✗
-
-     SQLite. Not even close.
-
-     Unless... is there a sync component?
-\`\`\`
-
----
-
-## Phase 1 → Phase 2 Transition
-
-Explore sessions begin in **Phase 1: free-form exploration**. Stay in Phase 1 as long as
-the conversation is open-ended, investigative, or purely about understanding.
-
-**Signal transition when concrete design decisions surface** — e.g., "which storage approach
-should we use?", "should this be synchronous or async?". When this happens, say explicitly:
-
-> "I'm seeing some concrete decisions here — let me capture them with a few focused questions."
-
-Then begin Phase 2 Q&A rounds.
-
-**Do NOT force the transition** if the exploration is purely investigative (mapping existing
-code, understanding a system, no decisions to make). Some explorations never reach Phase 2,
-and that's fine.
-
----
-
-## Phase 2: Q&A Rounds
-
-Each round covers **one theme** and contains **2–5 focused questions**.
-
-### Round format
-
-Present the round like this:
-
-\`\`\`
-### Round N — <Theme>
-
-**Q1 — <Question title>**
-<1-2 sentence question>
-
-Options:
-- A) <option>  ← recommended — <brief reason>
-- B) <option>
-- C) <option>
-
-**Q2 — <Question title>**
-...
-\`\`\`
-
-After presenting a round, **stop and wait for the user to reply**. Do not proceed to the
-next round until they answer.
-
-### After each round: append to the exploration doc
-
-After the user replies to a round, **immediately append** that round's Q&A log to the
-exploration doc under the \`## Rounds\` section. Use this format:
-
-\`\`\`markdown
-### Round N — <Theme>
-
-#### Q<N>.<i> — <Question title>
-
-<Question text>
-
-Options:
-- A) <option> ← recommended (reason)
-- B) <option>
-- C) <option>
-
-**Selected:** <letter>) — <any notes from the user>
-\`\`\`
-
-**Append only** — do NOT rewrite the file from scratch. This preserves progress if the
-conversation is interrupted.
-
-### How many rounds?
-
-Continue rounds until all significant design ambiguity is resolved. There is **no round
-limit**. If significant open questions remain after a round, identify the next theme and
-start another round. Stop when the user signals they are done or no significant ambiguity
-remains.
-
----
-
-## End-of-Session Wrap-Up
-
-When all Q&A rounds are complete and the user signals they are done, complete the exploration
-doc by writing the final two sections:
-
-**Insights & Decisions** — summarise every concrete decision made during the session.
-Format each as: "_Decision:_ <what was decided> — _Reason:_ <why>".
-
-**Open Questions** — list any questions raised but not resolved. These carry forward into
-the proposal or design phase.
-
-Append these sections to the exploration doc, then offer:
-
-> "Exploration doc saved at \`<docPath>\`. Ready to propose? Run \`/enpalspec:propose\`."
 
 ---
 
 ## Guardrails
 
 - **Don't implement** - Never write code or implement features. Creating EnpalSpec artifacts is fine, writing application code is not.
-- **Don't fake understanding** - If something is unclear, dig deeper
-- **Don't rush** - Discovery is thinking time, not task time
-- **Don't force structure** - Let patterns emerge naturally; Phase 2 only when decisions surface
-- **Don't auto-capture mid-session** - Append Q&A log after each round; final sections at wrap-up
-- **Do visualize** - A good diagram is worth many paragraphs
-- **Do explore the codebase** - Ground discussions in reality
-- **Do question assumptions** - Including the user's and your own
+- **Document-first** - Observations, questions, and answers go in the file; chat carries summaries only
+- **One clarifying question at a time** - If topic is vague, ask biggest-blast-radius question first, wait for answer, then next
+- **Append, don't rewrite** - Only append to the document; never rewrite from scratch
+- **No open questions section** - Ask remaining questions as a round instead
+- **Do visualize** - A good ASCII diagram in Observations is worth many paragraphs
+- **Do explore the codebase** - Ground Observations in reality, not theory
 - **Always use path.join()** - Never hardcode path separators; this tool runs on Windows too`,
     license: 'MIT',
     compatibility: 'Requires enpalspec CLI.',
@@ -426,11 +223,11 @@ export function getOpsxExploreCommandTemplate(): CommandTemplate {
     description: 'Enter explore mode - think through ideas, investigate problems, clarify requirements',
     category: 'Workflow',
     tags: ['workflow', 'explore', 'experimental', 'thinking'],
-    content: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
+    content: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat summarises findings and signals progress.
 
 ## Exploration Doc Setup
 
-**At the very start of every session**, create an exploration document before any exploration begins.
+**At the very start of every session**, handle topic derivation, clarification (if needed), and document creation before anything else.
 
 ### Step 1: Derive the topic
 
@@ -449,198 +246,124 @@ Always use \`path.join()\` with platform-appropriate separators:
 
 Example: \`openspec/explorations/2026-04/exploration-2026-04-07-auth-redesign.md\`
 
-### Step 3: Create the document immediately
+### Step 3: Check if the topic needs clarification
 
-Write the file with heading, metadata, Context section, and empty Rounds/Insights/OpenQuestions sections.
-Tell the user: "Started exploration doc at \`<docPath>\`"
+**If the topic is specific enough to investigate**: skip to Step 4.
+
+**If the topic is too vague to investigate meaningfully**:
+- Create the doc with Context only
+- Ask the single most impactful clarifying question in chat
+- Wait for the answer, ask the next most impactful question if needed
+- Continue until you have enough context, then proceed to Step 4
+
+Ask one question at a time. Biggest blast radius first.
+
+### Step 4: Create the document and write Observations + Round 1 in one shot
+
+Write the document with all sections:
+
+\`\`\`markdown
+# Exploration: <topic>
+
+**Date:** <yyyy-mm-dd>
+**Linked change:** none
+
+## Context
+
+<2-3 sentences summarising what the user wants to explore and why>
+
+## Observations
+
+<Codebase research, diagrams, framing, and key findings>
+
+## Rounds
+
+## Round 1 — <Theme>
+
+### Q1.1 — <Question title>
+
+<1-sentence question or context>
+
+- [x] Recommended option ← recommended: reason
+- [ ] Alternative option
+- [ ] Another alternative
+
+> **Your answer / freetext:**
+>
+
+## Insights & Decisions
+
+<!-- Written at end of session -->
+\`\`\`
+
+After writing, tell the user in chat:
+
+> "**[3–5 bullet findings digest]**
+>
+> Observations and Round 1 are in the doc at \`<docPath>\` — answer there, then say 'next'."
 
 ---
 
 **IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create EnpalSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.
 
-**This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
-
-**Input**: The argument after \`/enpalspec:explore\` is whatever the user wants to think about. Could be:
-- A vague idea: "real-time collaboration"
-- A specific problem: "the auth system is getting unwieldy"
-- A change name: "add-dark-mode" (to explore in context of that change)
-- A comparison: "postgres vs sqlite for this"
-- Nothing (just enter explore mode)
-
 ---
 
-## The Stance
+## Q&A Rounds
 
-- **Curious, not prescriptive** - Ask questions that emerge naturally, don't follow a script
-- **Open threads, not interrogations** - Surface multiple interesting directions and let the user follow what resonates. Don't funnel them through a single path of questions.
-- **Visual** - Use ASCII diagrams liberally when they'd help clarify thinking
-- **Adaptive** - Follow interesting threads, pivot when new information emerges
-- **Patient** - Don't rush to conclusions, let the shape of the problem emerge
-- **Grounded** - Explore the actual codebase when relevant, don't just theorize
+Each round covers **one theme**, 2–5 questions written to the exploration file (not asked in chat).
 
----
+Append each round to the file under \`## Rounds\` using this format:
 
-## What You Might Do
+\`\`\`markdown
+## Round N — <Theme>
 
-Depending on what the user brings, you might:
+### QN.M — <Question title>
 
-**Explore the problem space**
-- Ask clarifying questions that emerge from what they said
-- Challenge assumptions
-- Reframe the problem
-- Find analogies
+<1-sentence question or context>
 
-**Investigate the codebase**
-- Map existing architecture relevant to the discussion
-- Find integration points
-- Identify patterns already in use
-- Surface hidden complexity
+- [x] Recommended option ← recommended: reason
+- [ ] Alternative option
+- [ ] Another alternative
 
-**Compare options**
-- Brainstorm multiple approaches
-- Build comparison tables
-- Sketch tradeoffs
-- Recommend a path (if asked)
-
-**Visualize**
-\`\`\`
-┌─────────────────────────────────────────┐
-│     Use ASCII diagrams liberally        │
-├─────────────────────────────────────────┤
-│                                         │
-│   ┌────────┐         ┌────────┐        │
-│   │ State  │────────▶│ State  │        │
-│   │   A    │         │   B    │        │
-│   └────────┘         └────────┘        │
-│                                         │
-│   System diagrams, state machines,      │
-│   data flows, architecture sketches,    │
-│   dependency graphs, comparison tables  │
-│                                         │
-└─────────────────────────────────────────┘
+> **Your answer / freetext:**
+>
 \`\`\`
 
-**Surface risks and unknowns**
-- Identify what could go wrong
-- Find gaps in understanding
-- Suggest spikes or investigations
+After appending the round, tell the user in chat (only): "Round N is in the doc — answer there, then say 'next' when ready." Do NOT repeat questions in chat.
 
----
+When the user signals readiness ("next", "done", etc.):
+1. Read the exploration file and absorb their answers
+2. Post a brief decision summary in chat
+3. Append the next round or proceed to wrap-up
 
-## EnpalSpec Awareness
+**Append only** — never rewrite the file. **No round limit.**
 
-You have full context of the EnpalSpec system. Use it naturally, don't force it.
-
-### Check for context
-
-At the start, quickly check what exists:
-\`\`\`bash
-enpalspec list --json
-\`\`\`
-
-This tells you:
-- If there are active changes
-- Their names, schemas, and status
-- What the user might be working on
-
-If the user mentioned a specific change name, read its artifacts for context.
-
-### When no change exists
-
-Think freely. When insights crystallize, you might offer:
-
-- "This feels solid enough to start a change. Want me to create a proposal?"
-- Or keep exploring - no pressure to formalize
-
-### When a change exists
-
-If the user mentions a change or you detect one is relevant:
-
-1. **Read existing artifacts for context**
-   - \`openspec/changes/<name>/proposal.md\`
-   - \`openspec/changes/<name>/design.md\`
-   - \`openspec/changes/<name>/tasks.md\`
-   - etc.
-
-2. **Reference them naturally in conversation**
-   - "Your design mentions using Redis, but we just realized SQLite fits better..."
-   - "The proposal scopes this to premium users, but we're now thinking everyone..."
-
-3. **Offer to capture when decisions are made**
-
-   | Insight Type | Where to Capture |
-   |--------------|------------------|
-   | New requirement discovered | \`specs/<capability>/spec.md\` |
-   | Requirement changed | \`specs/<capability>/spec.md\` |
-   | Design decision made | \`design.md\` |
-   | Scope changed | \`proposal.md\` |
-   | New work identified | \`tasks.md\` |
-   | Assumption invalidated | Relevant artifact |
-
-   Example offers:
-   - "That's a design decision. Capture it in design.md?"
-   - "This is a new requirement. Add it to specs?"
-   - "This changes scope. Update the proposal?"
-
-4. **The user decides** - Offer and move on. Don't pressure. Don't auto-capture.
-
----
-
-## What You Don't Have To Do
-
-- Follow a script
-- Ask the same questions every time
-- Produce a specific artifact
-- Reach a conclusion
-- Stay on topic if a tangent is valuable
-- Be brief (this is thinking time)
-
----
-
-## Phase 1 → Phase 2 Transition
-
-Start every session in **Phase 1: free-form exploration**. Stay open-ended until concrete
-design decisions surface. When they do, signal the transition explicitly:
-
-> "I'm seeing some concrete decisions here — let me capture them with a few focused questions."
-
-If the exploration is purely investigative, stay in Phase 1 — never force Q&A rounds.
-
----
-
-## Phase 2: Q&A Rounds
-
-Each round covers **one theme**, 2–5 questions with options (one marked recommended). After
-presenting a round, **stop and wait for the user's reply**. Then:
-
-1. Append that round's Q&A log to the exploration doc (append only — don't rewrite)
-2. Identify the next theme if ambiguity remains
-3. Start the next round
-
-Continue rounds until all significant design ambiguity is resolved. **No round limit.**
+If questions remain before wrapping up, ask them as a final round — do not list them as open questions.
 
 ---
 
 ## End-of-Session Wrap-Up
 
-When done, complete the exploration doc:
-- Write **Insights & Decisions** — all concrete decisions made
-- Write **Open Questions** — unresolved items for proposal/design
+When all rounds are complete:
 
-Then offer: "Exploration doc saved. Ready to propose? Run \`/enpalspec:propose\`"
+1. Append \`## Insights & Decisions\` to the doc — every decision, formatted as:
+   "_Decision:_ <what was decided> — _Reason:_ <why>"
+2. Tell the user in chat:
+   > "Exploration doc saved. Ready to propose? Run \`/enpalspec:propose\`"
+
+Do NOT write an \`## Open Questions\` section. Ask remaining questions as a round instead.
 
 ---
 
 ## Guardrails
 
 - **Don't implement** - Never write code or implement features. Creating EnpalSpec artifacts is fine, writing application code is not.
-- **Don't fake understanding** - If something is unclear, dig deeper
-- **Don't rush** - Discovery is thinking time, not task time
-- **Don't force structure** - Let patterns emerge naturally; Phase 2 only when decisions surface
-- **Append, don't rewrite** - Q&A log is appended after each round; final sections at wrap-up
-- **Do visualize** - A good diagram is worth many paragraphs
-- **Do explore the codebase** - Ground discussions in reality
-- **Do question assumptions** - Including the user's and your own
+- **Document-first** - Observations, questions, and answers go in the file; chat carries summaries only
+- **One clarifying question at a time** - If topic is vague, biggest blast radius first
+- **Append, don't rewrite** - Only append to the document; never rewrite from scratch
+- **No open questions section** - Ask remaining questions as a round instead
+- **Do visualize** - ASCII diagrams in Observations are worth many paragraphs
+- **Do explore the codebase** - Ground Observations in reality
 - **Always use path.join()** - Never hardcode path separators; this tool runs on Windows too`
   };
 }

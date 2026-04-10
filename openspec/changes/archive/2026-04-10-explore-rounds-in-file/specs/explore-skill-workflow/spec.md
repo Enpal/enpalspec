@@ -1,9 +1,4 @@
-# explore-skill-workflow Specification
-
-## Purpose
-Define the document-first explore skill workflow: exploration document created at session start, Observations and Q&A rounds written upfront, with a propose handoff.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Explore skill creates exploration doc at session start
 The explore skill SHALL create the exploration document at the correct path at the start of every session. If the topic is clear, the skill SHALL immediately write `## Observations` and `## Round 1` to the document and post a findings digest in chat. If the topic is too vague to investigate meaningfully, the skill SHALL first ask clarifying questions in chat (one at a time, biggest blast radius first) until sufficient context exists.
@@ -67,3 +62,17 @@ The explore skill SHALL end the session by writing the `## Insights & Decisions`
 - **WHEN** questions remain unresolved before wrap-up
 - **THEN** the skill asks them as a final Q&A round in the document
 - **AND** does NOT write a `## Open Questions` section to the document
+
+## REMOVED Requirements
+
+### Requirement: Phase 1 — open-ended exploration
+**Reason:** Replaced by the document-first session model. The assistant's observations and framing are now written to the `## Observations` section upfront, not conducted as free-form chat dialogue.
+**Migration:** No migration needed — this is a prompt-level change to seeded templates.
+
+### Requirement: Phase 1 to Phase 2 transition
+**Reason:** The Phase 1 / Phase 2 distinction is removed. There is no transition — the document is the medium from the start.
+**Migration:** No migration needed.
+
+### Requirement: Phase 1 question discipline
+**Reason:** Phase 1 no longer exists. Vague topic clarification is handled by the new clarification flow (ask in chat before writing to doc).
+**Migration:** No migration needed.

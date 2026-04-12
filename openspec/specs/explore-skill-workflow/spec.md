@@ -6,12 +6,13 @@ Define the document-first explore skill workflow: exploration document created a
 ## Requirements
 
 ### Requirement: Explore skill fetches guidance before any other action
-The seeded explore skill (both `enpalspec-explore` skill and `enpalspec:explore` command) SHALL call `enpalspec guidance explore --json` as its absolute first step, before creating the exploration document or any other action. If the command returns a non-null `context`, the skill SHALL treat it as project background throughout the session. If the command returns non-null `instructions`, the skill SHALL treat them as additional guidance for the session. If the command fails or returns null fields, the skill SHALL continue normally without error.
+The seeded explore skill (both `enpalspec-explore` skill and `enpalspec:explore` command) SHALL call `enpalspec guidance explore --json` as Step 1 in its numbered Steps sequence, before creating the exploration document or any other action. If the command returns a non-null `context`, the skill SHALL treat it as binding project constraints (tech stack, platform requirements, conventions) and apply them throughout the session without including them in the exploration document. If the command returns non-null `instructions`, the skill SHALL treat them as workflow-specific overrides that modify or extend the default behaviour of this skill for the session. If the command fails or returns null fields, the skill SHALL continue normally without error.
 
 #### Scenario: Guidance returns context and instructions
 - **WHEN** user invokes the explore skill
 - **AND** `enpalspec guidance explore --json` returns `{ context: "TypeScript monorepo", instructions: "Always consider the SDK-first principle" }`
-- **THEN** the skill uses both as background context for the rest of the session
+- **THEN** the skill treats `context` as binding constraints and applies them throughout the session
+- **AND** the skill applies `instructions` as session-level overrides to its default behaviour
 - **AND** does NOT include this guidance verbatim in the exploration document
 
 #### Scenario: Guidance returns nothing
@@ -23,6 +24,12 @@ The seeded explore skill (both `enpalspec-explore` skill and `enpalspec:explore`
 - **WHEN** user invokes the explore skill
 - **AND** `enpalspec guidance explore --json` exits with a non-zero code or is not found in PATH
 - **THEN** the skill continues as normal without surfacing the error to the user
+
+#### Scenario: Guidance step appears as Step 1 in the numbered sequence
+- **WHEN** the explore skill template is rendered
+- **THEN** the guidance fetch is Step 1 in a top-level `**Steps**` block
+- **AND** topic derivation and document creation steps follow as Steps 2 and beyond
+- **AND** no guidance step appears before the `**Steps**` heading as a floating preamble
 
 ### Requirement: Explore skill creates exploration doc at session start
 The explore skill SHALL create the exploration document at the correct path at the start of every session. If the topic is clear, the skill SHALL immediately write `## Observations` and `## Round 1` to the document and post a findings digest in chat. If the topic is too vague to investigate meaningfully, the skill SHALL first ask clarifying questions in chat (one at a time, biggest blast radius first) until sufficient context exists.

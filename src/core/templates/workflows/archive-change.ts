@@ -12,19 +12,18 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
     description: 'Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.',
     instructions: `Archive a completed change in the experimental workflow.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance archive --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance archive --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
 
@@ -33,7 +32,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check artifact completion status**
+3. **Check artifact completion status**
 
    Run \`enpalspec status --change "<name>" --json\` to check artifact completion.
 
@@ -46,7 +45,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - Use **AskUserQuestion tool** to confirm user wants to proceed
    - Proceed if user confirms
 
-3. **Check task completion status**
+4. **Check task completion status**
 
    Read the tasks file (typically \`tasks.md\`) to check for incomplete tasks.
 
@@ -59,7 +58,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+5. **Assess delta spec sync state**
 
    Check for delta specs at \`openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
 
@@ -74,7 +73,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke enpalspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+6. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
    \`\`\`bash
@@ -91,7 +90,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    \`\`\`
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
@@ -135,19 +134,18 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'archive', 'experimental'],
     content: `Archive a completed change in the experimental workflow.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance archive --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name after \`/enpalspec:archive\` (e.g., \`/enpalspec:archive add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance archive --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
 
@@ -156,7 +154,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check artifact completion status**
+3. **Check artifact completion status**
 
    Run \`enpalspec status --change "<name>" --json\` to check artifact completion.
 
@@ -169,7 +167,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - Prompt user for confirmation to continue
    - Proceed if user confirms
 
-3. **Check task completion status**
+4. **Check task completion status**
 
    Read the tasks file (typically \`tasks.md\`) to check for incomplete tasks.
 
@@ -182,7 +180,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+5. **Assess delta spec sync state**
 
    Check for delta specs at \`openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
 
@@ -197,7 +195,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke enpalspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+6. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
    \`\`\`bash
@@ -214,7 +212,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    \`\`\`
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name

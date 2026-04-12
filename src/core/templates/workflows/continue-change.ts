@@ -12,19 +12,18 @@ export function getContinueChangeSkillTemplate(): SkillTemplate {
     description: 'Continue working on an OpenSpec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow.',
     instructions: `Continue working on a change by creating the next artifact.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance continue --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance continue --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes sorted by most recently modified. Then use the **AskUserQuestion tool** to let the user select which change to work on.
 
@@ -38,7 +37,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check current status**
+3. **Check current status**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -47,7 +46,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - \`artifacts\`: Array of artifacts with their status ("done", "ready", "blocked")
    - \`isComplete\`: Boolean indicating if all artifacts are complete
 
-3. **Act based on status**:
+4. **Act based on status**:
 
    ---
 
@@ -86,7 +85,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - This shouldn't happen with a valid schema
    - Show status and suggest checking for issues
 
-4. **After creating an artifact, show progress**
+5. **After creating an artifact, show progress**
    \`\`\`bash
    enpalspec status --change "<name>"
    \`\`\`
@@ -139,19 +138,18 @@ export function getOpsxContinueCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Continue working on a change by creating the next artifact.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance continue --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name after \`/enpalspec:continue\` (e.g., \`/enpalspec:continue add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance continue --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes sorted by most recently modified. Then use the **AskUserQuestion tool** to let the user select which change to work on.
 
@@ -165,7 +163,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check current status**
+3. **Check current status**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -174,7 +172,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - \`artifacts\`: Array of artifacts with their status ("done", "ready", "blocked")
    - \`isComplete\`: Boolean indicating if all artifacts are complete
 
-3. **Act based on status**:
+4. **Act based on status**:
 
    ---
 
@@ -213,7 +211,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - This shouldn't happen with a valid schema
    - Show status and suggest checking for issues
 
-4. **After creating an artifact, show progress**
+5. **After creating an artifact, show progress**
    \`\`\`bash
    enpalspec status --change "<name>"
    \`\`\`

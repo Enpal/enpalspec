@@ -12,55 +12,54 @@ export function getExploreSkillTemplate(): SkillTemplate {
     description: 'Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.',
     instructions: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat is a companion that summarises findings and signals progress.
 
-## Step 0: Load Project Guidance
+**Steps**
 
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance explore --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout the session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+1. **Load project guidance**
 
-## Exploration Doc Setup
+   \`\`\`bash
+   enpalspec guidance explore --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in the exploration document); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
 
-**At the very start of every session**, handle topic derivation, clarification (if needed), and document creation before anything else.
+2. **Derive the topic**
 
-### Step 1: Derive the topic
+   **At the very start of every session**, handle topic derivation before anything else.
 
-The argument after the skill invocation is the topic. Derive a kebab-case slug from it
-(e.g., "auth redesign" → \`auth-redesign\`, "how should we store tokens?" → \`token-storage\`).
+   The argument after the skill invocation is the topic. Derive a kebab-case slug from it
+   (e.g., "auth redesign" → \`auth-redesign\`, "how should we store tokens?" → \`token-storage\`).
 
-If no argument was provided, use the **AskUserQuestion tool** to ask:
-> "What do you want to explore? (I'll use your answer to name the exploration doc.)"
-Then derive the kebab-case topic from the reply.
+   If no argument was provided, use the **AskUserQuestion tool** to ask:
+   > "What do you want to explore? (I'll use your answer to name the exploration doc.)"
+   Then derive the kebab-case topic from the reply.
 
-### Step 2: Determine the file path
+3. **Determine the file path**
 
-\`\`\`
-const date = new Date();
-const yyyy = date.getFullYear();
-const mm = String(date.getMonth() + 1).padStart(2, '0');
-const dd = String(date.getDate()).padStart(2, '0');
-const folder = path.join('openspec', 'explorations', \`\${yyyy}-\${mm}\`);
-const filename = \`exploration-\${yyyy}-\${mm}-\${dd}-\${topic}.md\`;
-const docPath = path.join(folder, filename);
-\`\`\`
+   \`\`\`
+   const date = new Date();
+   const yyyy = date.getFullYear();
+   const mm = String(date.getMonth() + 1).padStart(2, '0');
+   const dd = String(date.getDate()).padStart(2, '0');
+   const folder = path.join('openspec', 'explorations', \`\${yyyy}-\${mm}\`);
+   const filename = \`exploration-\${yyyy}-\${mm}-\${dd}-\${topic}.md\`;
+   const docPath = path.join(folder, filename);
+   \`\`\`
 
-Always use \`path.join()\` — never hardcode slashes. This ensures correct behaviour on Windows.
+   Always use \`path.join()\` — never hardcode slashes. This ensures correct behaviour on Windows.
 
-### Step 3: Check if the topic needs clarification
+4. **Check if the topic needs clarification**
 
-**If the topic is specific enough to investigate** (e.g., "auth redesign", "postgres vs sqlite for CLI tools"): skip to Step 4.
+   **If the topic is specific enough to investigate** (e.g., "auth redesign", "postgres vs sqlite for CLI tools"): skip to Step 5.
 
-**If the topic is too vague to investigate meaningfully** (e.g., "performance", "make it better"):
-- Create the doc with Context only (leave Observations and Rounds empty)
-- Ask the single most impactful clarifying question in chat
-- Wait for the user's answer, then ask the next most impactful question if needed
-- Continue until you have enough context to write useful Observations
-- Then proceed to Step 4
+   **If the topic is too vague to investigate meaningfully** (e.g., "performance", "make it better"):
+   - Create the doc with Context only (leave Observations and Rounds empty)
+   - Ask the single most impactful clarifying question in chat
+   - Wait for the user's answer, then ask the next most impactful question if needed
+   - Continue until you have enough context to write useful Observations
+   - Then proceed to Step 5
 
-Ask one question at a time. Biggest blast radius first.
+   Ask one question at a time. Biggest blast radius first.
 
-### Step 4: Create the document and write Observations + Round 1 in one shot
+5. **Create the document and write Observations + Round 1 in one shot**
 
 Write the document with all sections filled:
 
@@ -233,48 +232,47 @@ export function getOpsxExploreCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'explore', 'experimental', 'thinking'],
     content: `Enter explore mode. The exploration document is the primary medium — observations, questions, and answers all live there. Chat summarises findings and signals progress.
 
-## Step 0: Load Project Guidance
+**Steps**
 
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance explore --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout the session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
+1. **Load project guidance**
 
-## Exploration Doc Setup
+   \`\`\`bash
+   enpalspec guidance explore --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in the exploration document); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
 
-**At the very start of every session**, handle topic derivation, clarification (if needed), and document creation before anything else.
+2. **Derive the topic**
 
-### Step 1: Derive the topic
+   **At the very start of every session**, handle topic derivation before anything else.
 
-The argument after \`/enpalspec:explore\` is the topic. Derive a kebab-case slug from it
-(e.g., "auth redesign" → \`auth-redesign\`, "postgres vs sqlite" → \`postgres-vs-sqlite\`).
+   The argument after \`/enpalspec:explore\` is the topic. Derive a kebab-case slug from it
+   (e.g., "auth redesign" → \`auth-redesign\`, "postgres vs sqlite" → \`postgres-vs-sqlite\`).
 
-If no argument was provided, use the **AskUserQuestion tool** to ask:
-> "What do you want to explore? (I'll use your answer to name the exploration doc.)"
-Then derive the kebab-case topic from the reply.
+   If no argument was provided, use the **AskUserQuestion tool** to ask:
+   > "What do you want to explore? (I'll use your answer to name the exploration doc.)"
+   Then derive the kebab-case topic from the reply.
 
-### Step 2: Determine the file path
+3. **Determine the file path**
 
-Always use \`path.join()\` with platform-appropriate separators:
-- Folder: \`path.join('openspec', 'explorations', '<yyyy-mm>')\`
-- File: \`exploration-<yyyy-mm-dd>-<topic>.md\`
+   Always use \`path.join()\` with platform-appropriate separators:
+   - Folder: \`path.join('openspec', 'explorations', '<yyyy-mm>')\`
+   - File: \`exploration-<yyyy-mm-dd>-<topic>.md\`
 
-Example: \`openspec/explorations/2026-04/exploration-2026-04-07-auth-redesign.md\`
+   Example: \`openspec/explorations/2026-04/exploration-2026-04-07-auth-redesign.md\`
 
-### Step 3: Check if the topic needs clarification
+4. **Check if the topic needs clarification**
 
-**If the topic is specific enough to investigate**: skip to Step 4.
+   **If the topic is specific enough to investigate**: skip to Step 5.
 
-**If the topic is too vague to investigate meaningfully**:
-- Create the doc with Context only
-- Ask the single most impactful clarifying question in chat
-- Wait for the answer, ask the next most impactful question if needed
-- Continue until you have enough context, then proceed to Step 4
+   **If the topic is too vague to investigate meaningfully**:
+   - Create the doc with Context only
+   - Ask the single most impactful clarifying question in chat
+   - Wait for the answer, ask the next most impactful question if needed
+   - Continue until you have enough context, then proceed to Step 5
 
-Ask one question at a time. Biggest blast radius first.
+   Ask one question at a time. Biggest blast radius first.
 
-### Step 4: Create the document and write Observations + Round 1 in one shot
+5. **Create the document and write Observations + Round 1 in one shot**
 
 Write the document with all sections:
 

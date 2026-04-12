@@ -12,14 +12,6 @@ export function getOpsxProposeSkillTemplate(): SkillTemplate {
     description: 'Propose a new change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.',
     instructions: `Propose a new change - create the change and generate all artifacts in one step.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance propose --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 I'll create a change with artifacts:
 - proposal.md (what & why)
 - design.md (how)
@@ -33,13 +25,20 @@ When ready to implement, run /enpalspec:apply
 
 **Steps**
 
-0. **Parse --exploration flag**
+1. **Load project guidance**
 
-   Before doing anything else, check whether the argument string contains \`--exploration <path>\`.
+   \`\`\`bash
+   enpalspec guidance propose --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **Parse --exploration flag**
+
+   Check whether the argument string contains \`--exploration <path>\`.
    - If found: extract the path value (everything after \`--exploration\` up to the next flag or end of string; strip surrounding quotes if present). Store it as the explicit exploration path. The change name/description is everything before \`--exploration\`.
    - If not found: no explicit exploration path; proceed normally.
 
-1. **If no clear input provided, ask what they want to build**
+3. **If no clear input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
    > "What change do you want to work on? Describe what you want to build or fix."
@@ -48,7 +47,7 @@ When ready to implement, run /enpalspec:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Trivial change detection**
+4. **Trivial change detection**
 
    Before scanning for explorations, judge whether the change is trivial. A change is trivial if:
    - The description indicates a small, localised fix: typo, rename, config value, single-line change
@@ -56,13 +55,13 @@ When ready to implement, run /enpalspec:apply
    - No architectural decisions are involved
 
    If trivial: briefly state your reasoning ("This looks like a minor change — skipping exploration check")
-   and skip directly to step 4.
+   and skip directly to step 6.
 
-   If non-trivial: proceed to step 3.
+   If non-trivial: proceed to step 5.
 
-3. **Exploration doc scan and gate**
+5. **Exploration doc scan and gate**
 
-   **If \`--exploration <path>\` was provided (step 0):**
+   **If \`--exploration <path>\` was provided (step 2):**
    - Attempt to read the file at that path
    - If the file cannot be read: report "Could not read exploration doc at \`<path>\`. Check the path and retry." and exit without creating any artifacts
    - If found: state "Using \`<path>\` as exploration context (provided explicitly)" and proceed — skip the directory scan entirely
@@ -90,13 +89,13 @@ When ready to implement, run /enpalspec:apply
    - If user says "explore now": output "Run \`/enpalspec:explore <topic>\`" and exit (do NOT create artifacts)
    - If user says "continue anyway": proceed without exploration context
 
-4. **Create the change directory**
+6. **Create the change directory**
    \`\`\`bash
    enpalspec new change "<name>"
    \`\`\`
    This creates a scaffolded change at \`openspec/changes/<name>/\` with \`.openspec.yaml\`.
 
-5. **Get the artifact build order**
+7. **Get the artifact build order**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -104,7 +103,7 @@ When ready to implement, run /enpalspec:apply
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-6. **Create artifacts in sequence until apply-ready**
+8. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -136,7 +135,7 @@ When ready to implement, run /enpalspec:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-7. **Show final status**
+9. **Show final status**
    \`\`\`bash
    enpalspec status --change "<name>"
    \`\`\`
@@ -180,14 +179,6 @@ export function getOpsxProposeCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Propose a new change - create the change and generate all artifacts in one step.
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance propose --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 I'll create a change with artifacts:
 - proposal.md (what & why)
 - design.md (how)
@@ -201,13 +192,20 @@ When ready to implement, run /enpalspec:apply
 
 **Steps**
 
-0. **Parse --exploration flag**
+1. **Load project guidance**
 
-   Before doing anything else, check whether the argument string contains \`--exploration <path>\`.
+   \`\`\`bash
+   enpalspec guidance propose --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **Parse --exploration flag**
+
+   Check whether the argument string contains \`--exploration <path>\`.
    - If found: extract the path value (everything after \`--exploration\` up to the next flag or end of string; strip surrounding quotes if present). Store it as the explicit exploration path. The change name/description is everything before \`--exploration\`.
    - If not found: no explicit exploration path; proceed normally.
 
-1. **If no input provided, ask what they want to build**
+3. **If no input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
    > "What change do you want to work on? Describe what you want to build or fix."
@@ -216,15 +214,15 @@ When ready to implement, run /enpalspec:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Trivial change detection**
+4. **Trivial change detection**
 
    Judge whether the change is trivial: typo fix, rename, config value, single-line change,
    no new capabilities or architectural decisions. If trivial, briefly state:
    "This looks like a minor change — skipping exploration check" and skip to step 4.
 
-3. **Exploration doc scan and gate**
+5. **Exploration doc scan and gate**
 
-   **If \`--exploration <path>\` was provided (step 0):**
+   **If \`--exploration <path>\` was provided (step 2):**
    - Attempt to read the file at that path
    - If the file cannot be read: report "Could not read exploration doc at \`<path>\`. Check the path and retry." and exit without creating any artifacts
    - If found: state "Using \`<path>\` as exploration context (provided explicitly)" and proceed — skip the directory scan entirely
@@ -242,13 +240,13 @@ When ready to implement, run /enpalspec:apply
      - "explore now" → output "Run \`/enpalspec:explore <topic>\`" and exit without creating artifacts
      - "continue anyway" → proceed
 
-4. **Create the change directory**
+6. **Create the change directory**
    \`\`\`bash
    enpalspec new change "<name>"
    \`\`\`
    This creates a scaffolded change at \`openspec/changes/<name>/\` with \`.openspec.yaml\`.
 
-5. **Get the artifact build order**
+7. **Get the artifact build order**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -256,7 +254,7 @@ When ready to implement, run /enpalspec:apply
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-6. **Create artifacts in sequence until apply-ready**
+8. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -288,7 +286,7 @@ When ready to implement, run /enpalspec:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-7. **Show final status**
+9. **Show final status**
    \`\`\`bash
    enpalspec status --change "<name>"
    \`\`\`

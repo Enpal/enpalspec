@@ -12,19 +12,18 @@ export function getVerifyChangeSkillTemplate(): SkillTemplate {
     description: 'Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.',
     instructions: `Verify that an implementation matches the change artifacts (specs, tasks, design).
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance verify --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance verify --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
 
@@ -34,7 +33,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check status to understand the schema**
+3. **Check status to understand the schema**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -42,7 +41,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - \`schemaName\`: The workflow being used (e.g., "spec-driven")
    - Which artifacts exist for this change
 
-3. **Get the change directory and load artifacts**
+4. **Get the change directory and load artifacts**
 
    \`\`\`bash
    enpalspec instructions apply --change "<name>" --json
@@ -50,7 +49,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    This returns the change directory and context files. Read all available artifacts from \`contextFiles\`.
 
-4. **Initialize verification report structure**
+5. **Initialize verification report structure**
 
    Create a report structure with three dimensions:
    - **Completeness**: Track tasks and spec coverage
@@ -59,7 +58,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
 
-5. **Verify Completeness**
+6. **Verify Completeness**
 
    **Task Completion**:
    - If tasks.md exists in contextFiles, read it
@@ -79,7 +78,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
        - Add CRITICAL issue: "Requirement not found: <requirement name>"
        - Recommendation: "Implement requirement X: <description>"
 
-6. **Verify Correctness**
+7. **Verify Correctness**
 
    **Requirement Implementation Mapping**:
    - For each requirement from delta specs:
@@ -98,7 +97,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
        - Add WARNING: "Scenario not covered: <scenario name>"
        - Recommendation: "Add test or implementation for scenario: <description>"
 
-7. **Verify Coherence**
+8. **Verify Coherence**
 
    **Design Adherence**:
    - If design.md exists in contextFiles:
@@ -116,7 +115,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
      - Add SUGGESTION: "Code pattern deviation: <details>"
      - Recommendation: "Consider following project pattern: <example>"
 
-8. **Generate Verification Report**
+9. **Generate Verification Report**
 
    **Summary Scorecard**:
    \`\`\`
@@ -189,19 +188,18 @@ export function getOpsxVerifyCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'verify', 'experimental'],
     content: `Verify that an implementation matches the change artifacts (specs, tasks, design).
 
-## Step 0: Load Project Guidance
-
-Before anything else, run:
-\`\`\`bash
-enpalspec guidance verify --json
-\`\`\`
-If the command succeeds and returns non-null fields: use \`context\` as project background throughout this session, and treat \`instructions\` as additional guidance. If the command fails or returns null fields, continue normally — no action needed.
-
 **Input**: Optionally specify a change name after \`/enpalspec:verify\` (e.g., \`/enpalspec:verify add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
-1. **If no change name provided, prompt for selection**
+1. **Load project guidance**
+
+   \`\`\`bash
+   enpalspec guidance verify --json
+   \`\`\`
+   If the command succeeds: apply \`context\` as binding project constraints throughout (tech stack, platform requirements, conventions — do NOT include in outputs); apply \`instructions\` as workflow-specific overrides if non-null. If it fails or returns null fields, continue normally.
+
+2. **If no change name provided, prompt for selection**
 
    Run \`enpalspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
 
@@ -211,7 +209,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check status to understand the schema**
+3. **Check status to understand the schema**
    \`\`\`bash
    enpalspec status --change "<name>" --json
    \`\`\`
@@ -219,7 +217,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
    - \`schemaName\`: The workflow being used (e.g., "spec-driven")
    - Which artifacts exist for this change
 
-3. **Get the change directory and load artifacts**
+4. **Get the change directory and load artifacts**
 
    \`\`\`bash
    enpalspec instructions apply --change "<name>" --json
@@ -227,7 +225,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    This returns the change directory and context files. Read all available artifacts from \`contextFiles\`.
 
-4. **Initialize verification report structure**
+5. **Initialize verification report structure**
 
    Create a report structure with three dimensions:
    - **Completeness**: Track tasks and spec coverage
@@ -236,7 +234,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
 
    Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
 
-5. **Verify Completeness**
+6. **Verify Completeness**
 
    **Task Completion**:
    - If tasks.md exists in contextFiles, read it
@@ -256,7 +254,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
        - Add CRITICAL issue: "Requirement not found: <requirement name>"
        - Recommendation: "Implement requirement X: <description>"
 
-6. **Verify Correctness**
+7. **Verify Correctness**
 
    **Requirement Implementation Mapping**:
    - For each requirement from delta specs:
@@ -275,7 +273,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
        - Add WARNING: "Scenario not covered: <scenario name>"
        - Recommendation: "Add test or implementation for scenario: <description>"
 
-7. **Verify Coherence**
+8. **Verify Coherence**
 
    **Design Adherence**:
    - If design.md exists in contextFiles:
@@ -293,7 +291,7 @@ If the command succeeds and returns non-null fields: use \`context\` as project 
      - Add SUGGESTION: "Code pattern deviation: <details>"
      - Recommendation: "Consider following project pattern: <example>"
 
-8. **Generate Verification Report**
+9. **Generate Verification Report**
 
    **Summary Scorecard**:
    \`\`\`

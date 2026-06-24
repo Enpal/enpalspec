@@ -9,8 +9,8 @@ vi.mock('../../src/utils/shell-detection.js', () => ({
 
 // Mock the ZshInstaller
 vi.mock('../../src/core/completions/installers/zsh-installer.js', () => ({
-  ZshInstaller: vi.fn().mockImplementation(() => ({
-    install: vi.fn().mockResolvedValue({
+  ZshInstaller: vi.fn().mockImplementation(function () {
+    this.install = vi.fn().mockResolvedValue({
       success: true,
       installedPath: '/home/user/.oh-my-zsh/completions/_openspec',
       isOhMyZsh: true,
@@ -20,12 +20,12 @@ vi.mock('../../src/core/completions/installers/zsh-installer.js', () => ({
         'Restart your shell or run: exec zsh',
         'Completions should activate automatically.',
       ],
-    }),
-    uninstall: vi.fn().mockResolvedValue({
+    });
+    this.uninstall = vi.fn().mockResolvedValue({
       success: true,
       message: 'Completion script removed from /home/user/.oh-my-zsh/completions/_openspec',
-    }),
-  })),
+    });
+  }),
 }));
 
 describe('CompletionCommand', () => {
@@ -196,19 +196,19 @@ describe('CompletionCommand', () => {
   describe('error handling', () => {
     it('should handle installation failures gracefully', async () => {
       const { ZshInstaller } = await import('../../src/core/completions/installers/zsh-installer.js');
-      vi.mocked(ZshInstaller).mockImplementationOnce(() => ({
-        install: vi.fn().mockResolvedValue({
+      vi.mocked(ZshInstaller).mockImplementationOnce(function () {
+        this.install = vi.fn().mockResolvedValue({
           success: false,
           isOhMyZsh: false,
           message: 'Permission denied',
-        }),
-        uninstall: vi.fn(),
-        isInstalled: vi.fn(),
-        getInstallationInfo: vi.fn(),
-        isOhMyZshInstalled: vi.fn(),
-        getInstallationPath: vi.fn(),
-        backupExistingFile: vi.fn(),
-      } as any));
+        });
+        this.uninstall = vi.fn();
+        this.isInstalled = vi.fn();
+        this.getInstallationInfo = vi.fn();
+        this.isOhMyZshInstalled = vi.fn();
+        this.getInstallationPath = vi.fn();
+        this.backupExistingFile = vi.fn();
+      } as any);
 
       const cmd = new CompletionCommand();
       await cmd.install({ shell: 'zsh' });
@@ -221,18 +221,18 @@ describe('CompletionCommand', () => {
 
     it('should handle uninstallation failures gracefully', async () => {
       const { ZshInstaller } = await import('../../src/core/completions/installers/zsh-installer.js');
-      vi.mocked(ZshInstaller).mockImplementationOnce(() => ({
-        install: vi.fn(),
-        uninstall: vi.fn().mockResolvedValue({
+      vi.mocked(ZshInstaller).mockImplementationOnce(function () {
+        this.install = vi.fn();
+        this.uninstall = vi.fn().mockResolvedValue({
           success: false,
           message: 'Completion script is not installed',
-        }),
-        isInstalled: vi.fn(),
-        getInstallationInfo: vi.fn(),
-        isOhMyZshInstalled: vi.fn(),
-        getInstallationPath: vi.fn(),
-        backupExistingFile: vi.fn(),
-      } as any));
+        });
+        this.isInstalled = vi.fn();
+        this.getInstallationInfo = vi.fn();
+        this.isOhMyZshInstalled = vi.fn();
+        this.getInstallationPath = vi.fn();
+        this.backupExistingFile = vi.fn();
+      } as any);
 
       const cmd = new CompletionCommand();
       await cmd.uninstall({ shell: 'zsh', yes: true });

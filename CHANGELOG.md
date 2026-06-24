@@ -1,5 +1,11 @@
 # @enpal/enpalspec
 
+## 1.4.0
+
+### Minor Changes
+
+- Add checkboxes pre-selecting recommended options in explore documents, fix devcontainer workspaces naming, and improve tool-selection prompt with smart-Enter and Codex global detection.
+
 ## 1.3.0
 
 ### Minor Changes

@@ -177,10 +177,13 @@ describe('searchable-multi-select keybindings', () => {
       expect(getStatus()).toBe('done');
     });
 
-    it('should show validation error when validation fails', async () => {
+    it('should show validation error when nothing can be added and validation fails', async () => {
+      // With smart-Enter, a highlighted selectable row is auto-added, so validation can only
+      // fail when the highlighted row is non-selectable (disabled) and nothing else is selected.
+      const choices = [{ name: 'Coming soon', value: 'agents', disabled: true }];
       const validate = (selected: string[]) =>
         selected.length > 0 ? true : 'Select at least one';
-      await setup(testChoices, validate);
+      await setup(choices, validate);
 
       pressKey('return');
       expect(getStatus()).toBe('idle');
@@ -195,6 +198,58 @@ describe('searchable-multi-select keybindings', () => {
       pressKey('space');
       pressKey('return');
       expect(getStatus()).toBe('done');
+    });
+  });
+
+  describe('Smart-Enter selects the highlighted row', () => {
+    it('should add the highlighted unselected tool on Enter (empty initial selection)', async () => {
+      await setup();
+      // Cursor starts on Tool A; move to Tool B without toggling, then Enter.
+      pressKey('down');
+      pressKey('return');
+      expect(getStatus()).toBe('done');
+      expect(getSelectedValues()).toEqual(['tool-b']);
+    });
+
+    it('should add the highlighted tool even when another tool is already selected', async () => {
+      // Tool A is pre-selected (mirrors an already-configured tool like Claude).
+      const choices = [
+        { name: 'Tool A', value: 'tool-a', preSelected: true },
+        { name: 'Tool B', value: 'tool-b' },
+        { name: 'Tool C', value: 'tool-c' },
+      ];
+      await setup(choices);
+      expect(getSelectedValues()).toEqual(['tool-a']);
+
+      // Arrow to the unselected Tool C and press Enter (the Codex-while-Claude-configured case).
+      pressKey('down');
+      pressKey('down');
+      pressKey('return');
+      expect(getStatus()).toBe('done');
+      expect(getSelectedValues()).toContain('tool-a');
+      expect(getSelectedValues()).toContain('tool-c');
+    });
+
+    it('should not duplicate an already-selected highlighted tool on Enter', async () => {
+      await setup();
+      // Toggle Tool A on; cursor stays on Tool A.
+      pressKey('space');
+      expect(getSelectedValues()).toEqual(['tool-a']);
+      pressKey('return');
+      expect(getStatus()).toBe('done');
+      expect(getSelectedValues()).toEqual(['tool-a']);
+    });
+
+    it('should not add a non-selectable (disabled) highlighted row on Enter', async () => {
+      const choices = [
+        { name: 'Tool A', value: 'tool-a' },
+        { name: 'Coming soon', value: 'agents', disabled: true },
+      ];
+      await setup(choices);
+      // Move to the disabled row and press Enter.
+      pressKey('down');
+      pressKey('return');
+      expect(getSelectedValues()).not.toContain('agents');
     });
   });
 
@@ -214,6 +269,8 @@ describe('searchable-multi-select keybindings', () => {
       expect(renderOutput).toContain('toggle');
       expect(renderOutput).toContain('Enter');
       expect(renderOutput).toContain('confirm');
+      // Enter copy clarifies it selects the highlighted row before confirming.
+      expect(renderOutput).toContain('highlighted');
       expect(renderOutput).not.toMatch(/Tab.*confirm/);
     });
   });

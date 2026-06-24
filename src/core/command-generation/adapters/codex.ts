@@ -7,23 +7,14 @@
  * override the default ~/.codex location.
  */
 
-import os from 'os';
 import path from 'path';
 import type { CommandContent, ToolCommandAdapter } from '../types.js';
 import { COMMAND_NAMESPACE } from '../namespace.js';
-
-/**
- * Returns the Codex home directory.
- * Respects the CODEX_HOME env var, defaulting to ~/.codex.
- */
-function getCodexHome(): string {
-  const envHome = process.env.CODEX_HOME?.trim();
-  return path.resolve(envHome ? envHome : path.join(os.homedir(), '.codex'));
-}
+import { getCodexHome } from '../codex-home.js';
 
 /**
  * Codex adapter for command generation.
- * File path: <CODEX_HOME>/prompts/opsx-<id>.md (absolute, global)
+ * File path: <CODEX_HOME>/prompts/enpalspec-<id>.md (absolute, global)
  * Frontmatter: description, argument-hint
  */
 export const codexAdapter: ToolCommandAdapter = {

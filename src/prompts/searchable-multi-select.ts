@@ -8,6 +8,8 @@ interface Choice {
   detected?: boolean;
   configuredLabel?: string;
   preSelected?: boolean;
+  /** Non-selectable rows are never toggled or auto-added on Enter. Defaults to selectable. */
+  disabled?: boolean;
 }
 
 interface Config {
@@ -69,24 +71,32 @@ async function createSearchableMultiSelect(): Promise<
     useKeypress((key) => {
       if (status === 'done') return;
 
-      // Enter to confirm/submit
+      // Enter to confirm/submit.
+      // Smart-Enter: if the highlighted row is a selectable tool that has not been
+      // toggled yet, add it before confirming so "arrow to a tool + Enter" configures it.
       if (isEnterKey(key)) {
+        const highlighted = filteredChoices[cursor];
+        let finalValues = selectedValues;
+        if (highlighted && !highlighted.disabled && !selectedSet.has(highlighted.value)) {
+          finalValues = [...selectedValues, highlighted.value];
+          setSelectedValues(finalValues);
+        }
         if (validate) {
-          const result = validate(selectedValues);
+          const result = validate(finalValues);
           if (result !== true) {
             setError(typeof result === 'string' ? result : 'Invalid');
             return;
           }
         }
         setStatus('done');
-        done(selectedValues);
+        done(finalValues);
         return;
       }
 
       // Space to toggle selection
       if (key.name === 'space') {
         const choice = filteredChoices[cursor];
-        if (choice) {
+        if (choice && !choice.disabled) {
           if (selectedSet.has(choice.value)) {
             setSelectedValues(selectedValues.filter(v => v !== choice.value));
           } else {
@@ -152,7 +162,7 @@ async function createSearchableMultiSelect(): Promise<
 
     // Instructions
     lines.push(
-      `  ${chalk.cyan('↑↓')} navigate • ${chalk.cyan('Space')} toggle • ${chalk.cyan('Backspace')} remove • ${chalk.cyan('Enter')} confirm`
+      `  ${chalk.cyan('↑↓')} navigate • ${chalk.cyan('Space')} toggle • ${chalk.cyan('Backspace')} remove • ${chalk.cyan('Enter')} select highlighted + confirm`
     );
 
     // List

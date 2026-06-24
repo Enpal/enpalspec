@@ -13,6 +13,7 @@ import {
   getConfiguredTools,
   getAllToolVersionStatus,
 } from '../../../src/core/shared/tool-detection.js';
+import { COMMAND_NAMESPACE } from '../../../src/core/command-generation/namespace.js';
 
 describe('tool-detection', () => {
   let testDir: string;
@@ -90,6 +91,80 @@ describe('tool-detection', () => {
       expect(status.configured).toBe(true);
       expect(status.fullyConfigured).toBe(true);
       expect(status.skillCount).toBe(SKILL_NAMES.length);
+    });
+  });
+
+  describe('getToolSkillStatus - Codex global detection', () => {
+    let codexHome: string;
+    let originalCodexHome: string | undefined;
+
+    beforeEach(async () => {
+      originalCodexHome = process.env.CODEX_HOME;
+      codexHome = path.join(os.tmpdir(), `codex-home-${randomUUID()}`);
+      await fs.mkdir(codexHome, { recursive: true });
+      process.env.CODEX_HOME = codexHome;
+    });
+
+    afterEach(async () => {
+      if (originalCodexHome === undefined) {
+        delete process.env.CODEX_HOME;
+      } else {
+        process.env.CODEX_HOME = originalCodexHome;
+      }
+      await fs.rm(codexHome, { recursive: true, force: true });
+    });
+
+    it('should report Codex configured when global command prompts exist', async () => {
+      const promptsDir = path.join(codexHome, 'prompts');
+      await fs.mkdir(promptsDir, { recursive: true });
+      await fs.writeFile(
+        path.join(promptsDir, `${COMMAND_NAMESPACE}-explore.md`),
+        'test prompt'
+      );
+
+      const status = getToolSkillStatus(testDir, 'codex');
+      expect(status.configured).toBe(true);
+      // No project skills present, so skillCount stays 0.
+      expect(status.skillCount).toBe(0);
+    });
+
+    it('should report Codex configured when only project skills exist', async () => {
+      const skillDir = path.join(testDir, '.codex', 'skills', 'enpalspec-explore');
+      await fs.mkdir(skillDir, { recursive: true });
+      await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'test content');
+
+      const status = getToolSkillStatus(testDir, 'codex');
+      expect(status.configured).toBe(true);
+      expect(status.skillCount).toBe(1);
+    });
+
+    it('should honor CODEX_HOME override for detection', async () => {
+      const overrideHome = path.join(os.tmpdir(), `codex-home-override-${randomUUID()}`);
+      const promptsDir = path.join(overrideHome, 'prompts');
+      await fs.mkdir(promptsDir, { recursive: true });
+      await fs.writeFile(
+        path.join(promptsDir, `${COMMAND_NAMESPACE}-apply.md`),
+        'test prompt'
+      );
+      process.env.CODEX_HOME = overrideHome;
+
+      try {
+        const status = getToolSkillStatus(testDir, 'codex');
+        expect(status.configured).toBe(true);
+      } finally {
+        await fs.rm(overrideHome, { recursive: true, force: true });
+      }
+    });
+
+    it('should not report Codex configured when home holds no EnpalSpec artifacts', async () => {
+      const promptsDir = path.join(codexHome, 'prompts');
+      await fs.mkdir(promptsDir, { recursive: true });
+      // Unrelated file that is not an EnpalSpec-generated command.
+      await fs.writeFile(path.join(promptsDir, 'unrelated.md'), 'not ours');
+
+      const status = getToolSkillStatus(testDir, 'codex');
+      expect(status.configured).toBe(false);
+      expect(status.skillCount).toBe(0);
     });
   });
 

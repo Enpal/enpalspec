@@ -25,6 +25,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     globalSetup: './vitest.setup.ts',
+    // Isolate Codex's global home per test file (see test/setup/isolate-codex-home.ts).
+    setupFiles: ['./test/setup/isolate-codex-home.ts'],
     // Tests rely on per-file process isolation (e.g., `process.cwd()` assumptions).
     pool: 'forks',
     maxWorkers: resolveMaxWorkers(),

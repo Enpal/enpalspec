@@ -7,6 +7,8 @@
 import path from 'path';
 import * as fs from 'fs';
 import { AI_TOOLS } from '../config.js';
+import { getCodexHome } from '../command-generation/codex-home.js';
+import { COMMAND_NAMESPACE } from '../command-generation/namespace.js';
 
 /**
  * Names of skill directories created by openspec init.
@@ -82,7 +84,33 @@ export function getToolsWithSkillsDir(): string[] {
 }
 
 /**
+ * Counts EnpalSpec command prompts in Codex's global home (`<codexHome>/prompts/`).
+ *
+ * Codex writes its slash commands globally rather than to the project, so this
+ * looks up the tracked command IDs by name (no globbing) under the resolved
+ * Codex home (respecting `CODEX_HOME`).
+ */
+function getCodexGlobalCommandCount(): number {
+  try {
+    const promptsDir = path.join(getCodexHome(), 'prompts');
+    let count = 0;
+    for (const commandId of COMMAND_IDS) {
+      const commandFile = path.join(promptsDir, `${COMMAND_NAMESPACE}-${commandId}.md`);
+      if (fs.existsSync(commandFile)) {
+        count++;
+      }
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Checks which skill files exist for a tool.
+ *
+ * For Codex, configured state also reflects its global command prompts, since
+ * Codex commands are written outside the project directory.
  */
 export function getToolSkillStatus(projectRoot: string, toolId: string): ToolSkillStatus {
   const tool = AI_TOOLS.find((t) => t.value === toolId);
@@ -98,6 +126,16 @@ export function getToolSkillStatus(projectRoot: string, toolId: string): ToolSki
     if (fs.existsSync(skillFile)) {
       skillCount++;
     }
+  }
+
+  if (toolId === 'codex') {
+    // Configured if project skills exist (skills-only delivery) OR global commands exist.
+    const globalCommandCount = getCodexGlobalCommandCount();
+    return {
+      configured: skillCount > 0 || globalCommandCount > 0,
+      fullyConfigured: skillCount === SKILL_NAMES.length,
+      skillCount,
+    };
   }
 
   return {
